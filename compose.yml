@@ -1,0 +1,178 @@
+services:
+  frontend:
+    image:
+    container_name: frontend
+    stdin_open: true
+    tty: open
+    networks:
+      - edge_net
+  
+  gateway:
+    image:
+    container_name: gateway
+    stdin_open: true
+    tty: open
+    networks:
+      - edge_net
+      - service_net
+      - observability_net
+    ports:
+      - "443:443"
+    expose:
+      - "9100"
+
+  auth:
+    image:
+    container_name: auth
+    stdin_open: true
+    tty: open
+    networks:
+      - services_net
+      - auth_net
+      - observability_net
+    expose:
+      - "7000"
+      - "9100"
+
+  auth-db:
+    image:
+    container_name: auth-db
+    stdin_open: true
+    tty: open
+    networks:
+      - auth_net
+    expose:
+      - "5432"
+  user:
+    image:
+    container_name: user
+    stdin_open: true
+    tty: open
+    networks:
+      - services_net
+      - user_net
+      - observability_net
+    expose:
+      - "7000"
+      - "9100"
+
+  user-db:
+    image:
+    container_name: user-db
+    stdin_open: true
+    tty: open
+    networks:
+      - user_net
+    expose:
+      - "5432"
+  
+  content:
+    image:
+    container_name: content
+    stdin_open: true
+    tty: open
+    networks:
+      - services_net
+      - content_net
+      - observability_net
+    expose:
+      - "7000"
+      - "9100"
+
+  content-db:
+    image:
+    container_name: content-db
+    stdin_open: true
+    tty: open
+    networks:
+      - content_net
+    expose:
+      - "5432"
+
+  social:
+    image:
+    container_name: social
+    stdin_open: true
+    tty: open
+    networks:
+      - services_net
+      - social_net
+      - observability_net
+    expose:
+      - "7000"
+      - "9100"
+
+  social-db:
+    image:
+    container_name: social-db
+    stdin_open: true
+    tty: open
+    networks:
+      - social_net
+    expose:
+      - "5432"
+
+  realtime:
+    image:
+    container_name: realtime
+    stdin_open: true
+    tty: open
+    networks:
+      - services_net
+      - realt_time_net
+      - observability_net
+    expose:
+    - "7000"
+    - "7001"
+    - "9100"
+
+  realtime_db:
+    image:
+    container_name: realtime_db
+    stdin_open: true
+    tty: open
+    networks:
+      - realt_time_net
+    expose:
+    - "5432"
+    
+  prometheus:
+    image:
+    container_name: prometheus
+    stdin_open: true
+    tty: open
+    networks:
+      - observability_net
+    expose:
+    - "9090"
+
+  grafana:
+    image:
+    container_name: grafana
+    stdin_open: true
+    tty: open
+    networks:
+      - observability_net
+    expose:
+    - "3000"
+
+networks:
+  edge_net:
+    driver: bridge
+  services_net:
+    driver: bridge
+  observability_net:
+    driver: bridge
+  auth_net:
+    driver: bridge
+  user_net:
+    driver: bridge
+  social_net:
+    driver: bridge
+  real_time_net:
+    driver: bridge
+  
+	
+
+
+volumes:

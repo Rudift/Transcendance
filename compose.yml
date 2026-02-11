@@ -49,9 +49,9 @@ services:
     expose:
       - "5432"
     volumes:
-      ./auth-db/data:/var/lib/postgresql/data
+      - auth-db-data:/var/lib/postgresql/data
   user:
-    build: 
+    build: ./user
     container_name: user
     stdin_open: true
     tty: true
@@ -78,10 +78,10 @@ services:
     expose:
       - "5432"
     volumes:
-      ./user-db/data:/var/lib/postgresql/data
+      - user-db-data:/var/lib/postgresql/data
   
   content:
-    image:
+    build: ./content
     container_name: content
     stdin_open: true
     tty: true
@@ -108,10 +108,10 @@ services:
     expose:
       - "5432"
     volumes:
-      ./content-db/data:/var/lib/postgresql/data
+      - content-db-data:/var/lib/postgresql/data
 
   social:
-    image:
+    build: ./social
     container_name: social
     stdin_open: true
     tty: true
@@ -130,7 +130,7 @@ services:
     environment:
       POSTGRES_USER: admin123
       POSTGRES_PASSWORD: ptt!
-      POSTGRES_DB: auth-db 
+      POSTGRES_DB: social-db 
     stdin_open: true
     tty: true
     networks:
@@ -138,10 +138,10 @@ services:
     expose:
       - "5432"
     volumes:
-      ./social-db/data:/var/lib/postgresql/data
+      - social-db-data::/var/lib/postgresql/data
 
   realtime:
-    image:
+    build: ./realtime
     container_name: realtime
     stdin_open: true
     tty: true
@@ -169,27 +169,40 @@ services:
     expose:
       - "5432"
     volumes:
-      ./realtime-db/data:/var/lib/postgresql/data
+      - realtime-db-data:/var/lib/postgresql/data
     
   prometheus:
-    image:
+    image: prom/prometheus
     container_name: prometheus
-    stdin_open: true
-    tty: true
     networks:
       - observability_net
-    expose:
-      - "9090"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/prometheus/prometheus.yml
 
   grafana:
-    image:
+    image: grafana/grafana:latest
     container_name: grafana
-    stdin_open: true
-    tty: true
+    ports:
+      - "3000:3000"
     networks:
       - observability_net
-    expose:
-      - "3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin123
+      - GF_SECURITY_ADMIN_PASSWORD=ptt
+    restart: unless-stopped
+
+
+volumes:
+  auth-db-data:
+  user-db-data:
+  content-db-data:
+  social-db-data:
+  realtime-db-data:
+  grafana-storage:
 
 networks:
   edge_net:
@@ -207,4 +220,4 @@ networks:
   content_net:
     driver: bridge
   realtime_net:
-    river: bridge
+    driver: bridge

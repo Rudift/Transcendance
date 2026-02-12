@@ -17,7 +17,7 @@ services:
       - services_net
       - observability_net
     ports:
-      - "443:443"
+      - "8443:8443"
     expose:
       - "9100"
     volumes:
@@ -216,6 +216,8 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_SERVER_ROOT_URL=https://localhost:8443/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
     restart: unless-stopped
 
 

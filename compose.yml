@@ -35,7 +35,7 @@ services:
       - "9100"
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/nginx.conf
-      - ./gateway/ssl:/etc/nginx/ssl
+      - ./.pki/gateway:/etc/nginx/ssl
     depends_on:
       - auth
       - user

@@ -4,24 +4,49 @@
 GREEN = \033[0;32m
 YELLOW = \033[0;33m
 RED = \033[0;31m
+ORANGE = \033[0;33m
+WHITE = \033[1;37m
+BOLD = \033[1m
 NC = \033[0m # No Color
 
 # Fichier de dépendance pour éviter de regénérer les certificats
 PKI_FLAG = .pki/.generated
 
+# Banner ASCII
+define BANNER
+$(WHITE)
+ ██   ██  ██████  
+ ██   ██     ██  ██
+ ███████  █████  ███
+      ██  ██       ██
+      ██  ███████  ██
+$(ORANGE)
+ ██   ██ ██    ██ ██████  
+ ██   ██ ██    ██ ██   ██ 
+ ███████ ██    ██ ██████  
+ ██   ██ ██    ██ ██   ██ 
+ ██   ██  ██████  ██████  
+$(NC)
+endef
+export BANNER
+
 # Commande par défaut
-all: up
+all: banner up
+
+# Affiche le banner
+banner:
+	@echo "$$BANNER"
 
 # Lance le script PKI puis démarre les conteneurs
 up: $(PKI_FLAG)
-	@echo "$(YELLOW)� Démarrage des conteneurs Docker...$(NC)"
+	@echo "$(YELLOW)🚀 Démarrage des conteneurs Docker...$(NC)"
 	@docker compose up -d
 	@echo "$(GREEN)✅ Conteneurs démarrés$(NC)"
 	@docker compose ps
 
 # Génère les certificats seulement si nécessaire
 $(PKI_FLAG): pki_gen.sh
-	@echo "$(YELLOW)� Génération des certificats SSL...$(NC)"
+	@echo "$(YELLOW)🛡️  Génération des certificats SSL...$(NC)"
 	@bash pki_gen.sh
 	@mkdir -p .pki
 	@touch $(PKI_FLAG)

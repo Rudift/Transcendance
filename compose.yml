@@ -6,19 +6,53 @@ services:
     tty: true
     networks:
       - edge_net
+    volumes:
+      - ./.pki/frontend:/app/certs:ro
+    expose:
+      - "3000"
   
+  # BFF pour notre config multiservice  
+  # bff:
+  #   build: ./bff
+  #   container_name: bff
+  #   stdin_open: true
+  #   tty: true
+  #   networks:
+  #     - services_net
+  #     - edge_net
+  #     - observability_net
+  #   expose:
+  #    - "7000"
+  #    - "9100"
+
+  # BFF pour site Groupomania
   bff:
     build: ./bff
     container_name: bff
-    stdin_open: true
-    tty: true
+    environment:
+      - PORT=7000
+      - DB_CONNECT=mongodb://bff-db:27017/Groupomania
+      - SSL_CERT_PATH=/app/certs/bff.crt    
+      - SSL_KEY_PATH=/app/certs/bff.key     
+      - SSL_CA_PATH=/app/certs/ca.crt        
+    depends_on:
+      - bff-db
     networks:
-      - services_net
+      - bff_net
       - edge_net
-      - observability_net
     expose:
-     - "7000"
-     - "9100"
+      - "7000"
+    volumes:
+      - ./.pki/bff:/app/certs:ro 
+
+# Pour faire tourner le MongoDB pour site Groupomania
+  bff-db:
+    image: mongo:7-jammy
+    container_name: bff-db
+    networks:
+      - bff_net
+    volumes:
+      - bff-db-data:/data/db # volume managé
 
   gateway:
     image: nginx:alpine
@@ -37,12 +71,13 @@ services:
       - ./gateway/nginx.conf:/etc/nginx/nginx.conf
       - ./.pki/gateway:/etc/nginx/ssl
     depends_on:
-      - auth
-      - user
-      - content
-      - social
-      - realtime
+    #   - auth
+    #   - user
+    #   - content
+    #   - social
+    #   - realtime
       - frontend
+      - bff
 
   auth:
     build: ./auth
@@ -338,6 +373,7 @@ volumes:
   realtime-db-data:
   grafana-storage:
   prometheus-data:
+  bff-db-data:
 
 networks:
   edge_net:
@@ -355,4 +391,6 @@ networks:
   content_net:
     driver: bridge
   realtime_net:
+    driver: bridge
+  bff_net:
     driver: bridge

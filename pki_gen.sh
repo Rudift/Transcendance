@@ -20,6 +20,8 @@ SERVICES=(
   realtime-db
   prometeus
   grafana
+  bff
+  frontend
 )
 
 echo "==> Reset PKI"

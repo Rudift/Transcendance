@@ -60,7 +60,9 @@ pki-clean:
 # **************************************************************************** #
 
 up: $(PKI_FLAG)
-	@printf "$(YELLOW)🐳 Démarrage des conteneurs...$(NC)\n"
+	@printf "$(YELLOW)� Construction des images...$(NC)\n"
+	@$(COMPOSE) build
+	@printf "$(YELLOW)�🐳 Démarrage des conteneurs...$(NC)\n"
 	@$(COMPOSE) up -d
 	@printf "$(GREEN)✅ Conteneurs démarrés$(NC)\n"
 	@$(COMPOSE) ps
@@ -125,7 +127,7 @@ re: fclean all
 #                                     HELP                                     #
 # **************************************************************************** #
 
-all:
+help:
 	@printf "$(GREEN)$(BOLD)═══════════════════════════════════════════════════════════$(NC)\n"
 	@printf "$(GREEN)$(BOLD)                    $(NAME) - Makefile                    $(NC)\n"
 	@printf "$(GREEN)$(BOLD)═══════════════════════════════════════════════════════════$(NC)\n"
@@ -150,7 +152,6 @@ all:
 	@printf "  $(WHITE)make help$(NC)         Affiche cette aide\n"
 	@printf "\n"
 
-help: all
 
 # **************************************************************************** #
 #                                    PHONY                                     #

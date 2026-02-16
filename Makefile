@@ -1,114 +1,151 @@
-.PHONY: all up down build clean fclean re logs ps help
+# **************************************************************************** #
+#                                    PROJECT                                   #
+# **************************************************************************** #
 
-# Couleurs pour les messages
-GREEN = \033[0;32m
-YELLOW = \033[0;33m
-RED = \033[0;31m
-ORANGE = \033[0;33m
-WHITE = \033[1;37m
-BOLD = \033[1m
-NC = \033[0m # No Color
+.DEFAULT_GOAL:= up
+NAME:= Transcendance
 
-# Fichier de dépendance pour éviter de regénérer les certificats
-PKI_FLAG = .pki/.generated
+# **************************************************************************** #
+#                                     TOOLS                                    #
+# **************************************************************************** #
 
-# Banner ASCII
-define BANNER
-$(WHITE)
- ██   ██  ██████  
- ██   ██     ██  ██
- ███████  █████  ███
-      ██  ██       ██
-      ██  ███████  ██
-$(ORANGE)
- ██   ██ ██    ██ ██████  
- ██   ██ ██    ██ ██   ██ 
- ███████ ██    ██ ██████  
- ██   ██ ██    ██ ██   ██ 
- ██   ██  ██████  ██████  
-$(NC)
-endef
-export BANNER
+SHELL:= /bin/bash
+RM:= rm -rf
 
-# Commande par défaut
-all: banner up
+# **************************************************************************** #
+#                                     COLORS                                   #
+# **************************************************************************** #
 
-# Affiche le banner
-banner:
-	@echo "$$BANNER"
+GREEN:= \033[0;32m
+YELLOW:= \033[0;33m
+RED:= \033[0;31m
+BLUE:= \033[0;34m
+WHITE:= \033[1;37m
+BOLD:= \033[1m
+NC:= \033[0m
 
-# Lance le script PKI puis démarre les conteneurs
-up: $(PKI_FLAG)
-	@echo "$(YELLOW)🚀 Démarrage des conteneurs Docker...$(NC)"
-	@docker compose up -d
-	@echo "$(GREEN)✅ Conteneurs démarrés$(NC)"
-	@docker compose ps
+# **************************************************************************** #
+#                                 CONFIGURATION                                #
+# **************************************************************************** #
 
-# Génère les certificats seulement si nécessaire
-$(PKI_FLAG): pki_gen.sh
-	@echo "$(YELLOW)🛡️  Génération des certificats SSL...$(NC)"
-	@bash pki_gen.sh
-	@mkdir -p .pki
+# Docker Compose
+COMPOSE_FILE?= compose.yml
+COMPOSE:= docker compose -f $(COMPOSE_FILE)
+
+# PKI (Public Key Infrastructure)
+PKI_SCRIPT:= pki_gen.sh
+PKI_FLAG:= .pki/.generated
+SSL_DIRS:= gateway/ssl bff/ssl
+
+# **************************************************************************** #
+#                               PKI GENERATION                                 #
+# **************************************************************************** #
+
+pki-gen: $(PKI_FLAG)
+
+$(PKI_FLAG): $(PKI_SCRIPT)
+	@printf "$(YELLOW)🛡️  Génération des certificats PKI...$(NC)\n"
+	@bash $(PKI_SCRIPT)
+	@mkdir -p $$(dirname $(PKI_FLAG))
 	@touch $(PKI_FLAG)
-	@echo "$(GREEN)✅ Certificats générés$(NC)"
+	@printf "$(GREEN)✅ Certificats générés$(NC)\n"
 
-# Arrête les conteneurs
+pki-clean:
+	@printf "$(YELLOW)🧽 Nettoyage des certificats PKI...$(NC)\n"
+	@$(RM) $(SSL_DIRS) .pki
+	@printf "$(GREEN)✅ Certificats PKI supprimés$(NC)\n"
+
+# **************************************************************************** #
+#                              DOCKER ORCHESTRATION                            #
+# **************************************************************************** #
+
+up: $(PKI_FLAG)
+	@printf "$(YELLOW) Construction des images...$(NC)\n"
+	@$(COMPOSE) build
+	@printf "$(YELLOW) Démarrage des conteneurs...$(NC)\n"
+	@$(COMPOSE) up -d
+	@printf "$(GREEN)✅ Conteneurs démarrés$(NC)\n"
+	@$(COMPOSE) ps
+
 down:
-	@echo "$(YELLOW)🛑 Arrêt des conteneurs...$(NC)"
-	@docker compose down
-	@echo "$(GREEN)✅ Conteneurs arrêtés$(NC)"
+	@printf "$(YELLOW)🛑 Arrêt des conteneurs...$(NC)\n"
+	@$(COMPOSE) down
+	@printf "$(GREEN)✅ Conteneurs arrêtés$(NC)\n"
 
-# Build les images sans démarrer
 build:
-	@echo "$(YELLOW)🔨 Construction des images...$(NC)"
-	@docker compose build
-	@echo "$(GREEN)✅ Images construites$(NC)"
+	@printf "$(YELLOW)🔨 Construction des images...$(NC)\n"
+	@$(COMPOSE) build
+	@printf "$(GREEN)✅ Images construites$(NC)\n"
 
-# Rebuild complet + démarrage
 rebuild: down
-	@echo "$(YELLOW)🔨 Reconstruction complète...$(NC)"
-	@docker compose build --no-cache
-	@rm -f $(PKI_FLAG)
-	@$(MAKE) $(PKI_FLAG)
-	@docker compose up -d
-	@echo "$(GREEN)✅ Rebuild terminé$(NC)"
+	@printf "$(YELLOW)🔨 Reconstruction complète (no-cache)...$(NC)\n"
+	@$(COMPOSE) build --no-cache
+	@$(RM) .pki
+	@$(MAKE) up
+	@printf "$(GREEN)✅ Rebuild terminé$(NC)\n"
 
-# Affiche les logs
 logs:
-	@docker compose logs -f
+	@$(COMPOSE) logs -f
 
-# Affiche le statut des conteneurs
 ps:
-	@docker compose ps
+	@$(COMPOSE) ps
 
-# Nettoie les conteneurs et réseaux
+# **************************************************************************** #
+#                              DEPENDENCY MANAGEMENT                           #
+# **************************************************************************** #
+
+deps:
+	@printf "$(YELLOW)🔗 Récupération des images depuis le registry...$(NC)\n"
+	@$(COMPOSE) pull --ignore-pull-failures || true
+	@printf "$(GREEN)✅ Images récupérées$(NC)\n"# **************************************************************************** #
+#                                   CLEANING                                   #
+# **************************************************************************** #
+
 clean:
-	@echo "$(YELLOW)🧹 Nettoyage des conteneurs et réseaux...$(NC)"
-	@docker compose down -v
-	@echo "$(GREEN)✅ Nettoyage terminé$(NC)"
+	@printf "$(YELLOW)🧹 Nettoyage des conteneurs et volumes...$(NC)\n"
+	@$(COMPOSE) down -v
+	@printf "$(GREEN)✅ Nettoyage terminé$(NC)\n"
 
-# Nettoie tout (conteneurs, volumes, images, certificats)
-fclean: clean
-	@echo "$(RED)🗑️  Suppression complète (images + certificats)...$(NC)"
-	@docker compose down -v --rmi all
-	@rm -rf gateway/ssl/*.pem bff/ssl/*.pem .pki 2>/dev/null || true
-	@echo "$(GREEN)✅ Nettoyage complet terminé$(NC)"
+fclean: clean pki-clean
+	@printf "$(RED)🗑️  Suppression complète des images Docker...$(NC)\n"
+	@$(COMPOSE) down -v --rmi all
+	@printf "$(GREEN)✅ Nettoyage complet terminé$(NC)\n"
 
-# Relance tout depuis zéro
-re: fclean all
+re: fclean up
 
-# Aide
+# **************************************************************************** #
+#                                     HELP                                     #
+# **************************************************************************** #
+
 help:
-	@echo "$(GREEN)Makefile Docker Compose$(NC)"
-	@echo ""
-	@echo "Commandes disponibles:"
-	@echo "  $(YELLOW)make$(NC) ou $(YELLOW)make up$(NC)     - Génère les certificats et démarre les conteneurs"
-	@echo "  $(YELLOW)make down$(NC)           - Arrête les conteneurs"
-	@echo "  $(YELLOW)make build$(NC)          - Construit les images sans démarrer"
-	@echo "  $(YELLOW)make rebuild$(NC)        - Reconstruit tout et redémarre"
-	@echo "  $(YELLOW)make logs$(NC)           - Affiche les logs en temps réel"
-	@echo "  $(YELLOW)make ps$(NC)             - Affiche le statut des conteneurs"
-	@echo "  $(YELLOW)make clean$(NC)          - Supprime conteneurs et volumes"
-	@echo "  $(YELLOW)make fclean$(NC)         - Supprime tout (+ images + certificats)"
-	@echo "  $(YELLOW)make re$(NC)             - Relance tout depuis zéro"
-	@echo "  $(YELLOW)make help$(NC)           - Affiche cette aide"
+	@printf "$(GREEN)$(BOLD)═══════════════════════════════════════════════════════════$(NC)\n"
+	@printf "$(GREEN)$(BOLD)                    $(NAME) - Makefile                    $(NC)\n"
+	@printf "$(GREEN)$(BOLD)═══════════════════════════════════════════════════════════$(NC)\n"
+	@printf "\n"
+	@printf "$(YELLOW)PKI (Certificats SSL):$(NC)\n"
+	@printf "  $(WHITE)make pki-gen$(NC)      Génère les certificats via $(PKI_SCRIPT)\n"
+	@printf "  $(WHITE)make pki-clean$(NC)    Supprime les certificats et le flag PKI\n"
+	@printf "\n"
+	@printf "$(YELLOW)Docker (compose: $(COMPOSE_FILE)):$(NC)\n"
+	@printf "  $(WHITE)make$(NC) ou $(WHITE)make up$(NC)  Génère PKI si besoin + build + démarre\n"
+	@printf "  $(WHITE)make down$(NC)         Arrête les conteneurs\n"
+	@printf "  $(WHITE)make build$(NC)        Construit les images Docker\n"
+	@printf "  $(WHITE)make rebuild$(NC)      Reconstruction no-cache + redémarrage\n"
+	@printf "  $(WHITE)make logs$(NC)         Affiche les logs en temps réel\n"
+	@printf "  $(WHITE)make ps$(NC)           Statut des conteneurs\n"
+	@printf "\n"
+	@printf "$(YELLOW)Maintenance:$(NC)\n"
+	@printf "  $(WHITE)make deps$(NC)         Pull les images depuis le registry\n"
+	@printf "  $(WHITE)make clean$(NC)        Nettoie conteneurs + volumes\n"
+	@printf "  $(WHITE)make fclean$(NC)       Nettoyage complet (images + certificats)\n"
+	@printf "  $(WHITE)make re$(NC)           fclean puis up (rebuild complet)\n"
+	@printf "  $(WHITE)make help$(NC)         Affiche cette aide\n"
+	@printf "\n"
+
+
+# **************************************************************************** #
+#                                    PHONY                                     #
+# **************************************************************************** #
+
+.PHONY: all help pki-gen pki-clean up down build rebuild logs ps deps clean \
+	fclean re

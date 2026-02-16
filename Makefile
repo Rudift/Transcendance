@@ -19,7 +19,7 @@ RM:= rm -rf
 GREEN:= \033[0;32m
 YELLOW:= \033[0;33m
 RED:= \033[0;31m
-ORANGE:= \033[0;33m
+BLUE:= \033[0;34m
 WHITE:= \033[1;37m
 BOLD:= \033[1m
 NC:= \033[0m
@@ -51,18 +51,18 @@ $(PKI_FLAG): $(PKI_SCRIPT)
 	@printf "$(GREEN)✅ Certificats générés$(NC)\n"
 
 pki-clean:
-	@printf "$(YELLOW)🧽 Nettoyage du flag PKI...$(NC)\n"
-	@$(RM) $(PKI_FLAG)
-	@printf "$(GREEN)✅ Flag PKI supprimé$(NC)\n"
+	@printf "$(YELLOW)🧽 Nettoyage des certificats PKI...$(NC)\n"
+	@$(RM) $(SSL_DIRS) .pki
+	@printf "$(GREEN)✅ Certificats PKI supprimés$(NC)\n"
 
 # **************************************************************************** #
 #                              DOCKER ORCHESTRATION                            #
 # **************************************************************************** #
 
 up: $(PKI_FLAG)
-	@printf "$(YELLOW)� Construction des images...$(NC)\n"
+	@printf "$(YELLOW) Construction des images...$(NC)\n"
 	@$(COMPOSE) build
-	@printf "$(YELLOW)�🐳 Démarrage des conteneurs...$(NC)\n"
+	@printf "$(YELLOW) Démarrage des conteneurs...$(NC)\n"
 	@$(COMPOSE) up -d
 	@printf "$(GREEN)✅ Conteneurs démarrés$(NC)\n"
 	@$(COMPOSE) ps
@@ -80,9 +80,8 @@ build:
 rebuild: down
 	@printf "$(YELLOW)🔨 Reconstruction complète (no-cache)...$(NC)\n"
 	@$(COMPOSE) build --no-cache
-	@$(RM) $(PKI_FLAG)
-	@$(MAKE) $(PKI_FLAG)
-	@$(COMPOSE) up -d
+	@$(RM) .pki
+	@$(MAKE) up
 	@printf "$(GREEN)✅ Rebuild terminé$(NC)\n"
 
 logs:
@@ -96,17 +95,9 @@ ps:
 # **************************************************************************** #
 
 deps:
-	@printf "$(YELLOW)🔗 Gestion des dépendances...$(NC)\n"
-	@if command -v mmd-mp >/dev/null 2>&1; then \
-echo "$(GREEN)→ mmd-mp trouvé$(NC)"; \
-mmd-mp install; \
-else \
-echo "$(ORANGE)→ mmd-mp non trouvé, fallback sur docker compose pull$(NC)"; \
-$(COMPOSE) pull --ignore-pull-failures; \
-fi
-	@printf "$(GREEN)✅ Dépendances gérées$(NC)\n"
-
-# **************************************************************************** #
+	@printf "$(YELLOW)🔗 Récupération des images depuis le registry...$(NC)\n"
+	@$(COMPOSE) pull --ignore-pull-failures || true
+	@printf "$(GREEN)✅ Images récupérées$(NC)\n"# **************************************************************************** #
 #                                   CLEANING                                   #
 # **************************************************************************** #
 
@@ -115,13 +106,12 @@ clean:
 	@$(COMPOSE) down -v
 	@printf "$(GREEN)✅ Nettoyage terminé$(NC)\n"
 
-fclean: clean
-	@printf "$(RED)🗑️  Suppression complète (images + certificats)...$(NC)\n"
+fclean: clean pki-clean
+	@printf "$(RED)🗑️  Suppression complète des images Docker...$(NC)\n"
 	@$(COMPOSE) down -v --rmi all
-	@$(RM) $(SSL_DIRS) .pki
 	@printf "$(GREEN)✅ Nettoyage complet terminé$(NC)\n"
 
-re: fclean all
+re: fclean up
 
 # **************************************************************************** #
 #                                     HELP                                     #
@@ -134,21 +124,21 @@ help:
 	@printf "\n"
 	@printf "$(YELLOW)PKI (Certificats SSL):$(NC)\n"
 	@printf "  $(WHITE)make pki-gen$(NC)      Génère les certificats via $(PKI_SCRIPT)\n"
-	@printf "  $(WHITE)make pki-clean$(NC)    Supprime le flag de génération PKI\n"
+	@printf "  $(WHITE)make pki-clean$(NC)    Supprime les certificats et le flag PKI\n"
 	@printf "\n"
 	@printf "$(YELLOW)Docker (compose: $(COMPOSE_FILE)):$(NC)\n"
-	@printf "  $(WHITE)make$(NC) ou $(WHITE)make up$(NC)  Génère PKI si besoin + démarre les conteneurs\n"
+	@printf "  $(WHITE)make$(NC) ou $(WHITE)make up$(NC)  Génère PKI si besoin + build + démarre\n"
 	@printf "  $(WHITE)make down$(NC)         Arrête les conteneurs\n"
 	@printf "  $(WHITE)make build$(NC)        Construit les images Docker\n"
-	@printf "  $(WHITE)make rebuild$(NC)      Reconstruction complète + redémarrage\n"
+	@printf "  $(WHITE)make rebuild$(NC)      Reconstruction no-cache + redémarrage\n"
 	@printf "  $(WHITE)make logs$(NC)         Affiche les logs en temps réel\n"
 	@printf "  $(WHITE)make ps$(NC)           Statut des conteneurs\n"
 	@printf "\n"
 	@printf "$(YELLOW)Maintenance:$(NC)\n"
-	@printf "  $(WHITE)make deps$(NC)         Gère les dépendances (mmd-mp ou pull)\n"
+	@printf "  $(WHITE)make deps$(NC)         Pull les images depuis le registry\n"
 	@printf "  $(WHITE)make clean$(NC)        Nettoie conteneurs + volumes\n"
 	@printf "  $(WHITE)make fclean$(NC)       Nettoyage complet (images + certificats)\n"
-	@printf "  $(WHITE)make re$(NC)           Relance tout depuis zéro\n"
+	@printf "  $(WHITE)make re$(NC)           fclean puis up (rebuild complet)\n"
 	@printf "  $(WHITE)make help$(NC)         Affiche cette aide\n"
 	@printf "\n"
 

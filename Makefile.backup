@@ -1,0 +1,141 @@
+PHONY := all pki-gen pki-clean up down build rebuild clean fclean re logs ps help deps
+
+
+SHELL := /bin/bash
+
+# Couleurs pour les messages
+GREEN := \033[0;32m
+YELLOW := \033[0;33m
+RED := \033[0;31m
+ORANGE := \033[0;33m
+WHITE := \033[1;37m
+BOLD := \033[1m
+NC := \033[0m # No Color
+
+# Fichier-flag indiquant que la PKI a été générée
+PKI_FLAG := .pki/.generated
+
+# Docker compose wrapper
+COMPOSE_FILE ?= compose.yml
+COMPOSE := docker compose -f $(COMPOSE_FILE)
+
+# Banner ASCII (simple)
+define BANNER
+$(WHITE)
+  Transcendance - Makefile
+$(NC)
+endef
+export BANNER
+
+.PHONY: $(PHONY)
+
+# Default target
+all: help
+
+## -----------------------------
+## Section: PKI (génération de certificats)
+## -----------------------------
+
+# Générer la PKI (expose la cible pki-gen)
+pki-gen: $(PKI_FLAG)
+
+$(PKI_FLAG): pki_gen.sh
+	@echo "$(YELLOW)�️  Génération des certificats PKI...$(NC)"
+	@bash pki_gen.sh
+	@mkdir -p $$(dirname $(PKI_FLAG))
+	@touch $(PKI_FLAG)
+	@echo "$(GREEN)✅ Certificats générés ($(PKI_FLAG))$(NC)"
+
+# Forcer la régénération (supprime le flag puis regen)
+pki-clean:
+	@echo "$(YELLOW)🧽 Nettoyage PKI (flag) ...$(NC)"
+	@rm -f $(PKI_FLAG)
+	@echo "$(GREEN)✅ Flag PKI supprimé — relancez 'make pki-gen' pour régénérer.$(NC)"
+
+## -----------------------------
+## Section: Docker / orchestration
+## -----------------------------
+
+up: $(PKI_FLAG)
+	@echo "$(YELLOW)� Démarrage des conteneurs (compose file: $(COMPOSE_FILE))...$(NC)"
+	@$(COMPOSE) up -d
+	@echo "$(GREEN)✅ Conteneurs démarrés$(NC)"
+	@$(COMPOSE) ps
+
+down:
+	@echo "$(YELLOW)🛑 Arrêt des conteneurs...$(NC)"
+	@$(COMPOSE) down
+	@echo "$(GREEN)✅ Conteneurs arrêtés$(NC)"
+
+build:
+	@echo "$(YELLOW)🔨 Construction des images...$(NC)"
+	@$(COMPOSE) build
+	@echo "$(GREEN)✅ Images construites$(NC)"
+
+rebuild: down
+	@echo "$(YELLOW)🔨 Reconstruction complète (no-cache)...$(NC)"
+	@$(COMPOSE) build --no-cache
+	@rm -f $(PKI_FLAG)
+	@$(MAKE) $(PKI_FLAG)
+	@$(COMPOSE) up -d
+	@echo "$(GREEN)✅ Rebuild terminé$(NC)"
+
+logs:
+	@$(COMPOSE) logs -f
+
+ps:
+	@$(COMPOSE) ps
+
+clean:
+	@echo "$(YELLOW)🧹 Nettoyage des conteneurs et réseaux...$(NC)"
+	@$(COMPOSE) down -v
+	@echo "$(GREEN)✅ Nettoyage terminé$(NC)"
+
+fclean: clean
+	@echo "$(RED)🗑️  Suppression complète (images + certificats)...$(NC)"
+	@$(COMPOSE) down -v --rmi all
+	@rm -rf gateway/ssl/*.pem bff/ssl/*.pem .pki 2>/dev/null || true
+	@echo "$(GREEN)✅ Nettoyage complet terminé$(NC)"
+
+re: fclean all
+
+## -----------------------------
+## Gestion des dépendances
+## -----------------------------
+
+# Utilise mmd-mp si disponible, sinon fait un 'docker compose pull'
+deps:
+	@echo "$(YELLOW)🔗 Gestion des dépendances...$(NC)"
+	@if command -v mmd-mp >/dev/null 2>&1; then \
+		echo "→ mmd-mp trouvé : exécution de 'mmd-mp install' (hypothèse)"; \
+		mmd-mp install; \
+	else \
+		echo "→ mmd-mp non trouvé : fallback = '$(COMPOSE) pull'"; \
+		$(COMPOSE) pull --ignore-pull-failures; \
+	fi
+
+## -----------------------------
+## Aide / documentation
+## -----------------------------
+
+help:
+	@echo "$(GREEN)Transcendance - Makefile - Sections disponibles:$(NC)"
+	@echo ""
+	@echo "PKI:" 
+	@echo "  $(YELLOW)make pki-gen$(NC)    - Génère la PKI via ./pki_gen.sh (crée $(PKI_FLAG))"
+	@echo "  $(YELLOW)make pki-clean$(NC)  - Supprime le flag de génération PKI"
+	@echo ""
+	@echo "Docker (utilise $(COMPOSE_FILE)) :"
+	@echo "  $(YELLOW)make up$(NC)         - Génère la PKI si nécessaire puis démarre les conteneurs"
+	@echo "  $(YELLOW)make down$(NC)       - Arrête les conteneurs"
+	@echo "  $(YELLOW)make build$(NC)      - Construit les images"
+	@echo "  $(YELLOW)make rebuild$(NC)    - Rebuild complet et restart"
+	@echo "  $(YELLOW)make logs$(NC)       - Affiche les logs"
+	@echo "  $(YELLOW)make ps$(NC)         - Statut des conteneurs"
+	@echo "  $(YELLOW)make clean$(NC)      - Nettoyage conteneurs + volumes"
+	@echo "  $(YELLOW)make fclean$(NC)     - Nettoyage complet (images + certificats)"
+	@echo ""
+	@echo "Autre:" 
+	@echo "  $(YELLOW)make deps$(NC)       - Gère les dépendances : utilise 'mmd-mp' si présent, sinon 'docker compose pull'"
+	@echo "  $(YELLOW)make help$(NC)       - Affiche cette aide"
+

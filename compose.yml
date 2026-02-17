@@ -92,11 +92,11 @@ services:
       - "7000"
       - "9100"
     volumes:
-      - ./pki/auth:/app/certs:ro
+      - ./.pki/auth:/app/certs:ro
     environment:
-      - SSL_CERT_PATH=app/certs/auth.crt
-      - SSL_KEY_PATH=app/certs/auth.key
-      - SSL_CA_PATH=app/certs/ca.crt
+      - SSL_CERT_PATH=/app/certs/auth.crt
+      - SSL_KEY_PATH=/app/certs/auth.key
+      - SSL_CA_PATH=/app/certs/ca.crt
       
 
   auth-db:
@@ -143,11 +143,11 @@ services:
       - "7000"
       - "9100"
     volumes:
-      - ./pki/user:/app/certs:ro
+      - ./.pki/user:/app/certs:ro
     environment:
-      - SSL_CERT_PATH=app/certs/user.crt
-      - SSL_KEY_PATH=app/certs/user.key
-      - SSL_CA_PATH=app/certs/ca.crt
+      - SSL_CERT_PATH=/app/certs/user.crt
+      - SSL_KEY_PATH=/app/certs/user.key
+      - SSL_CA_PATH=/app/certs/ca.crt
 
   user-db:
     image: postgres:15-alpine
@@ -194,11 +194,11 @@ services:
       - "7000"
       - "9100"
     volumes:
-      - ./pki/content:/app/certs:ro
+      - ./.pki/content:/app/certs:ro
     environment:
-      - SSL_CERT_PATH=app/certs/content.crt
-      - SSL_KEY_PATH=app/certs/content.KEY
-      - SSL_CA_PATH=app/certs/ca.crt
+      - SSL_CERT_PATH=/app/certs/content.crt
+      - SSL_KEY_PATH=/app/certs/content.KEY
+      - SSL_CA_PATH=/app/certs/ca.crt
 
   content-db:
     image: postgres:15-alpine
@@ -245,11 +245,11 @@ services:
       - "7000"
       - "9100"
     volumes:
-      - ./pki/social:/app/certs:ro
+      - ./.pki/social:/app/certs:ro
     environment:
-      - SSL_CERT_PATH=app/certs/social.crt
-      - SSL_KEY_PATH=app/certs/social.key
-      - SSL_CA_PATH=app/certs/ca.crt
+      - SSL_CERT_PATH=/app/certs/social.crt
+      - SSL_KEY_PATH=/app/certs/social.key
+      - SSL_CA_PATH=/app/certs/ca.crt
 
   social-db:
     image: postgres:15-alpine
@@ -297,7 +297,7 @@ services:
       - "7001"
       - "9100"
     volumes:
-      - ./pki/realtime:/app/certs:ro
+      - ./.pki/realtime:/app/certs:ro
     environment:
       - SSL_CERT_PATH=app/certs/realtime.crt
       - SSL_KEY_PATH=app/certs/realtime.key
@@ -343,8 +343,14 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus/prometheus.yml:/prometheus/prometheus.yml
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/web-config.yml:/etc/prometheus/web-config.yml
+      - ./.pki/prometheus:/etc/prometheus/certs:ro
       - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.config.file=/etc/prometheus/web-config.yml'
 
   grafana:
     image: grafana/grafana:latest

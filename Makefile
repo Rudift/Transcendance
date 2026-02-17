@@ -106,12 +106,18 @@ clean:
 	@$(COMPOSE) down -v
 	@printf "$(GREEN)✅ Nettoyage terminé$(NC)\n"
 
-fclean: clean pki-clean
+fclean: clean
 	@printf "$(RED)🗑️  Suppression complète des images Docker...$(NC)\n"
 	@$(COMPOSE) down -v --rmi all
+	@printf "$(YELLOW)🧽 Nettoyage des certificats PKI...$(NC)\n"
+	@$(RM) .pki pki
 	@printf "$(GREEN)✅ Nettoyage complet terminé$(NC)\n"
 
 re: fclean up
+	@printf "$(YELLOW)🧽 Nettoyage des certificats PKI...$(NC)\n"
+	@find .pki -type f -delete 2>/dev/null || true
+	@find pki -type f -delete 2>/dev/null || true
+	@printf "$(GREEN)✅ Fichiers de certificats supprimés$(NC)\n"
 
 # **************************************************************************** #
 #                                     HELP                                     #

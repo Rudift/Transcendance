@@ -2,11 +2,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY auth/package*.json ./
 
 RUN npm install
 
-COPY . .
+COPY auth/ .
+
+COPY .pki/auth /app/certs
 
 EXPOSE 9100
 

@@ -1,13 +1,13 @@
 services:
   frontend:
-    build: ./frontend
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
     container_name: frontend
     stdin_open: true
     tty: true
     networks:
       - edge_net
-    volumes:
-      - ./.pki/frontend:/app/certs:ro
     expose:
       - "3000"
   
@@ -27,7 +27,9 @@ services:
 
   # BFF pour site Groupomania
   bff:
-    build: ./bff
+    build:
+      context: .
+      dockerfile: bff/Dockerfile
     container_name: bff
     environment:
       - PORT=7000
@@ -42,8 +44,6 @@ services:
       - edge_net
     expose:
       - "7000"
-    volumes:
-      - ./.pki/bff:/app/certs:ro 
 
 # Pour faire tourner le MongoDB pour site Groupomania
   bff-db:
@@ -55,7 +55,9 @@ services:
       - bff-db-data:/data/db # volume managé
 
   gateway:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
     container_name: gateway
     stdin_open: true
     tty: true
@@ -67,9 +69,6 @@ services:
       - "8443:8443"
     expose:
       - "9100"
-    volumes:
-      - ./gateway/nginx.conf:/etc/nginx/nginx.conf
-      - ./.pki/gateway:/etc/nginx/ssl
     depends_on:
     #   - auth
     #   - user
@@ -80,7 +79,9 @@ services:
       - bff
 
   auth:
-    build: ./auth
+    build:
+      context: .
+      dockerfile: auth/Dockerfile
     container_name: auth
     stdin_open: true
     tty: true
@@ -91,8 +92,6 @@ services:
     expose:
       - "7000"
       - "9100"
-    volumes:
-      - ./.pki/auth:/app/certs:ro
     environment:
       - SSL_CERT_PATH=/app/certs/auth.crt
       - SSL_KEY_PATH=/app/certs/auth.key
@@ -100,7 +99,9 @@ services:
       
 
   auth-db:
-    image: postgres:15-alpine
+    build:
+      context: .
+      dockerfile: auth-db/Dockerfile
     container_name: auth-db
     restart: always
     env_file:
@@ -118,20 +119,15 @@ services:
     volumes:
       - auth-db-data:/var/lib/postgresql/data
       # Certificats SSL
-      - ./.pki/auth-db/auth-db.crt:/var/lib/postgresql/server.crt:ro
-      - ./.pki/auth-db/auth-db.key:/var/lib/postgresql/server.key:ro
-      - ./.pki/ca/ca.crt:/var/lib/postgresql/root.crt:ro
     command: >
-      sh -c "
-      chmod 600 /var/lib/postgresql/server.key &&
-      chown postgres:postgres /var/lib/postgresql/server.key /var/lib/postgresql/server.crt &&
       postgres -c ssl=on 
                -c ssl_cert_file=/var/lib/postgresql/server.crt 
                -c ssl_key_file=/var/lib/postgresql/server.key
                -c ssl_ca_file=/var/lib/postgresql/root.crt
-      "
   user:
-    build: ./user
+    build:
+      context: .
+      dockerfile: user/Dockerfile
     container_name: user
     stdin_open: true
     tty: true
@@ -142,15 +138,15 @@ services:
     expose:
       - "7000"
       - "9100"
-    volumes:
-      - ./.pki/user:/app/certs:ro
     environment:
       - SSL_CERT_PATH=/app/certs/user.crt
       - SSL_KEY_PATH=/app/certs/user.key
       - SSL_CA_PATH=/app/certs/ca.crt
 
   user-db:
-    image: postgres:15-alpine
+    build:
+      context: .
+      dockerfile: user-db/Dockerfile
     container_name: user-db
     restart: always
     env_file:
@@ -167,22 +163,16 @@ services:
       - "5432"
     volumes:
       - user-db-data:/var/lib/postgresql/data
-      # Certificats SSL
-      - ./.pki/user-db/user-db.crt:/var/lib/postgresql/server.crt:ro
-      - ./.pki/user-db/user-db.key:/var/lib/postgresql/server.key:ro
-      - ./.pki/ca/ca.crt:/var/lib/postgresql/root.crt:ro
     command: >
-      sh -c "
-      chmod 600 /var/lib/postgresql/server.key &&
-      chown postgres:postgres /var/lib/postgresql/server.key /var/lib/postgresql/server.crt &&
       postgres -c ssl=on 
                -c ssl_cert_file=/var/lib/postgresql/server.crt 
                -c ssl_key_file=/var/lib/postgresql/server.key
                -c ssl_ca_file=/var/lib/postgresql/root.crt
-      "
   
   content:
-    build: ./content
+    build:
+      context: .
+      dockerfile: content/Dockerfile
     container_name: content
     stdin_open: true
     tty: true
@@ -193,15 +183,15 @@ services:
     expose:
       - "7000"
       - "9100"
-    volumes:
-      - ./.pki/content:/app/certs:ro
     environment:
       - SSL_CERT_PATH=/app/certs/content.crt
       - SSL_KEY_PATH=/app/certs/content.KEY
       - SSL_CA_PATH=/app/certs/ca.crt
 
   content-db:
-    image: postgres:15-alpine
+    build:
+      context: .
+      dockerfile: content-db/Dockerfile
     container_name: content-db
     restart: always
     env_file:
@@ -218,22 +208,16 @@ services:
       - "5432"
     volumes:
       - content-db-data:/var/lib/postgresql/data
-      # Certificats SSL
-      - ./.pki/content-db/content-db.crt:/var/lib/postgresql/server.crt:ro
-      - ./.pki/content-db/content-db.key:/var/lib/postgresql/server.key:ro
-      - ./.pki/ca/ca.crt:/var/lib/postgresql/root.crt:ro
     command: >
-      sh -c "
-      chmod 600 /var/lib/postgresql/server.key &&
-      chown postgres:postgres /var/lib/postgresql/server.key /var/lib/postgresql/server.crt &&
       postgres -c ssl=on 
                -c ssl_cert_file=/var/lib/postgresql/server.crt 
                -c ssl_key_file=/var/lib/postgresql/server.key
                -c ssl_ca_file=/var/lib/postgresql/root.crt
-      "
 
   social:
-    build: ./social
+    build:
+      context: .
+      dockerfile: social/Dockerfile
     container_name: social
     stdin_open: true
     tty: true
@@ -244,15 +228,15 @@ services:
     expose:
       - "7000"
       - "9100"
-    volumes:
-      - ./.pki/social:/app/certs:ro
     environment:
       - SSL_CERT_PATH=/app/certs/social.crt
       - SSL_KEY_PATH=/app/certs/social.key
       - SSL_CA_PATH=/app/certs/ca.crt
 
   social-db:
-    image: postgres:15-alpine
+    build:
+      context: .
+      dockerfile: social-db/Dockerfile
     container_name: social-db
     restart: always
     env_file:
@@ -269,22 +253,16 @@ services:
       - "5432"
     volumes:
       - social-db-data:/var/lib/postgresql/data
-      # Certificats SSL
-      - ./.pki/social-db/social-db.crt:/var/lib/postgresql/server.crt:ro
-      - ./.pki/social-db/social-db.key:/var/lib/postgresql/server.key:ro
-      - ./.pki/ca/ca.crt:/var/lib/postgresql/root.crt:ro
     command: >
-      sh -c "
-      chmod 600 /var/lib/postgresql/server.key &&
-      chown postgres:postgres /var/lib/postgresql/server.key /var/lib/postgresql/server.crt &&
       postgres -c ssl=on 
                -c ssl_cert_file=/var/lib/postgresql/server.crt 
                -c ssl_key_file=/var/lib/postgresql/server.key
                -c ssl_ca_file=/var/lib/postgresql/root.crt
-      "
 
   realtime:
-    build: ./realtime
+    build:
+      context: .
+      dockerfile: realtime/Dockerfile
     container_name: realtime
     stdin_open: true
     tty: true
@@ -296,15 +274,15 @@ services:
       - "7000"
       - "7001"
       - "9100"
-    volumes:
-      - ./.pki/realtime:/app/certs:ro
     environment:
       - SSL_CERT_PATH=app/certs/realtime.crt
       - SSL_KEY_PATH=app/certs/realtime.key
       - SSL_CA_PATH=app/certs/ca.crt
 
   realtime-db:
-    image: postgres:15-alpine
+    build:
+      context: .
+      dockerfile: realtime-db/Dockerfile
     container_name: realtime-db
     restart: always
     env_file:
@@ -321,22 +299,16 @@ services:
       - "5432"
     volumes:
       - realtime-db-data:/var/lib/postgresql/data
-      # Certificats SSL
-      - ./.pki/realtime-db/realtime-db.crt:/var/lib/postgresql/server.crt:ro
-      - ./.pki/realtime-db/realtime-db.key:/var/lib/postgresql/server.key:ro
-      - ./.pki/ca/ca.crt:/var/lib/postgresql/root.crt:ro
     command: >
-      sh -c "
-      chmod 600 /var/lib/postgresql/server.key &&
-      chown postgres:postgres /var/lib/postgresql/server.key /var/lib/postgresql/server.crt &&
       postgres -c ssl=on 
                -c ssl_cert_file=/var/lib/postgresql/server.crt 
                -c ssl_key_file=/var/lib/postgresql/server.key
                -c ssl_ca_file=/var/lib/postgresql/root.crt
-      "
     
   prometheus:
-    image: prom/prometheus
+    build:
+      context: .
+      dockerfile: prometheus/Dockerfile
     container_name: prometheus
     networks:
       - observability_net
@@ -345,7 +317,6 @@ services:
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus/web-config.yml:/etc/prometheus/web-config.yml
-      - ./.pki/prometheus:/etc/prometheus/certs:ro
       - prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'

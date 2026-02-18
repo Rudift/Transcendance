@@ -2,10 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+COPY content/package*.json ./
+
+RUN npm install
+
+COPY content/ .
+
 # Copier les certificats PKI
 COPY .pki/content /app/certs
 
 EXPOSE 7000 9100
 
-# Placeholder - en attente du code de l'application
-CMD ["node", "-e", "console.log('Content service - Coming soon'); setInterval(() => {}, 1000)"]
+CMD ["npm", "start"]

@@ -67,8 +67,6 @@ services:
       - observability_net
     ports:
       - "8443:8443"
-    expose:
-      - "9100"
     depends_on:
     #   - auth
     #   - user
@@ -185,7 +183,7 @@ services:
       - "9100"
     environment:
       - SSL_CERT_PATH=/app/certs/content.crt
-      - SSL_KEY_PATH=/app/certs/content.KEY
+      - SSL_KEY_PATH=/app/certs/content.key
       - SSL_CA_PATH=/app/certs/ca.crt
 
   content-db:
@@ -275,9 +273,9 @@ services:
       - "7001"
       - "9100"
     environment:
-      - SSL_CERT_PATH=app/certs/realtime.crt
-      - SSL_KEY_PATH=app/certs/realtime.key
-      - SSL_CA_PATH=app/certs/ca.crt
+      - SSL_CERT_PATH=/app/certs/realtime.crt
+      - SSL_KEY_PATH=/app/certs/realtime.key
+      - SSL_CA_PATH=/app/certs/ca.crt
 
   realtime-db:
     build:
@@ -318,6 +316,13 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus/web-config.yml:/etc/prometheus/web-config.yml
       - prometheus-data:/prometheus
+    depends_on:
+      - gateway
+      - auth
+      - user
+      - content
+      - social
+      - realtime
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'

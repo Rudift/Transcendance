@@ -310,8 +310,8 @@ services:
     container_name: prometheus
     networks:
       - observability_net
-    ports:
-      - "9090:9090"
+    expose:
+      - "9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus/web-config.yml:/etc/prometheus/web-config.yml
@@ -329,10 +329,12 @@ services:
       - '--web.config.file=/etc/prometheus/web-config.yml'
 
   grafana:
-    image: grafana/grafana:latest
+    build:
+      context: .
+      dockerfile: grafana/Dockerfile
     container_name: grafana
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     networks:
       - observability_net
     volumes:
@@ -344,6 +346,12 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
       - GF_SERVER_ROOT_URL=https://localhost:8443/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      # Config HTTPS
+      - GF_SERVER_PROTOCOL=https
+      - GF_SERVER_CERT_FILE=/etc/grafana/certs/grafana.crt
+      - GF_SERVER_CERT_KEY=/etc/grafana/certs/grafana.key
+      - GF_SERVER_ENFORCE_DOMAIN=false
+      - GODEBUG=x509ignoreCN=0 # Permet d'accepter les certificats sans SANs
     restart: unless-stopped
 
 

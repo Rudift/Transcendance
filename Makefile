@@ -41,14 +41,7 @@ SSL_DIRS:= gateway/ssl bff/ssl
 #                               PKI GENERATION                                 #
 # **************************************************************************** #
 
-pki-gen: $(PKI_FLAG)
-
-$(PKI_FLAG): $(PKI_SCRIPT)
-	@printf "$(YELLOW)🛡️  Génération des certificats PKI...$(NC)\n"
-	@bash $(PKI_SCRIPT)
-	@mkdir -p $$(dirname $(PKI_FLAG))
-	@touch $(PKI_FLAG)
-	@printf "$(GREEN)✅ Certificats générés$(NC)\n"
+.PHONY: pki-clean
 
 pki-clean:
 	@printf "$(YELLOW)🧽 Nettoyage des certificats PKI...$(NC)\n"
@@ -59,9 +52,13 @@ pki-clean:
 #                              DOCKER ORCHESTRATION                            #
 # **************************************************************************** #
 
-up: $(PKI_FLAG)
+up:
+	@printf "$(YELLOW)🛡️  Génération des certificats PKI...$(NC)\n"
+	@bash $(PKI_SCRIPT)
+	@printf "$(GREEN)✅ Certificats générés$(NC)\n"
 	@printf "$(YELLOW) Construction des images...$(NC)\n"
 	@$(COMPOSE) build
+	@$(MAKE) pki-clean
 	@printf "$(YELLOW) Démarrage des conteneurs...$(NC)\n"
 	@$(COMPOSE) up -d
 	@printf "$(GREEN)✅ Conteneurs démarrés$(NC)\n"
@@ -106,12 +103,13 @@ clean:
 	@$(COMPOSE) down -v
 	@printf "$(GREEN)✅ Nettoyage terminé$(NC)\n"
 
-fclean: clean pki-clean
+fclean: clean
 	@printf "$(RED)🗑️  Suppression complète des images Docker...$(NC)\n"
 	@$(COMPOSE) down -v --rmi all
-	@printf "$(GREEN)✅ Nettoyage complet terminé$(NC)\n"
+	@$(MAKE) pki-clean
 
-re: fclean up
+re: fclean
+	@$(MAKE) up
 
 # **************************************************************************** #
 #                                     HELP                                     #

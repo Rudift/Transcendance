@@ -18,7 +18,7 @@ SERVICES=(
   content-db
   realtime
   realtime-db
-  prometeus
+  prometheus
   grafana
   bff
   frontend

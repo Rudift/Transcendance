@@ -337,6 +337,7 @@ services:
       - "3000"
     networks:
       - observability_net
+      - edge_net
     volumes:
       - grafana-storage:/var/lib/grafana
     env_file:

@@ -1,20 +1,66 @@
 {
-	"dashboard": {
-		"title": "Mon Dashboard",
-		"panels": [
-			{
-				"id": 1,
-				"title": "Mon Panel",
-				"type": "graph",
-				"gridPos": {
-					"x": 0, "y": 0,
-					"w": 12, "h": 8
+	"title": "Mon Dashboard",
+	"uid": "mon-dashboard",
+	"tags": [],
+	"timezone": "browser",
+	"schemaVersion": 16,
+	"version": 0,
+	"refresh": "5s",
+	"panels": [
+		{
+			"id": 1,
+			"title": "Usage CPU par service",
+			"type": "timeseries",
+			"gridPos": {
+				"x": 0,
+				"y": 0,
+				"w": 12,
+				"h": 8
+			},
+			"targets": [
+				{
+					"expr": "rate(process_cpu_seconds_total{job=~\"auth|user|content|social|realtime\"}[1m]) * 100",
+					"legendFormat": "{{job}} - CPU %",
+					"refId": "A"
+				}
+			],
+			"options": {},
+			"fieldConfig": {
+				"defaults": {
+					"unit": "percent",
+					"min": 0,
+					"max": 100
 				},
-				"targets": [],
-				"options": {},
-				"fieldConfig": {}
+				"overrides": []
 			}
-		],
-		"time":{"from": "now-1h", "to": "now"}
+		},
+		{
+			"id": 2,
+			"title": "Mémoire utilisée par service",
+			"type": "timeseries",
+			"gridPos": {
+				"x": 12,
+				"y": 0,
+				"w": 12,
+				"h": 8
+			},
+			"targets": [
+				{
+					"expr": "process_resident_memory_bytes{job=~\"auth|user|content|social|realtime\"} / 1024 / 1024",
+      				"legendFormat": "{{job}} - RAM (MB)",
+      				"refId": "A"
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "decmbytes",
+					"min": 0
+				}
+			}
+		}
+	],
+	"time": {
+		"from": "now-1h",
+		"to": "now"
 	}
 }

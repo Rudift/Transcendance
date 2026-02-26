@@ -303,6 +303,24 @@ services:
                -c ssl_key_file=/var/lib/postgresql/server.key
                -c ssl_ca_file=/var/lib/postgresql/root.crt
     
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    privileged: true
+    networks:
+      - observability_net
+    expose:
+      - "8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    restart: unless-stopped
+
   prometheus:
     build:
       context: .
@@ -323,6 +341,7 @@ services:
       - content
       - social
       - realtime
+      - cadvisor
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'

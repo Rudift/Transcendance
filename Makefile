@@ -41,7 +41,14 @@ SSL_DIRS:= gateway/ssl bff/ssl
 #                               PKI GENERATION                                 #
 # **************************************************************************** #
 
-.PHONY: pki-clean
+$(PKI_FLAG):
+	@printf "$(YELLOW)🛡️  Génération des certificats PKI...$(NC)\n"
+	@bash $(PKI_SCRIPT)
+	@mkdir -p .pki
+	@touch $(PKI_FLAG)
+	@printf "$(GREEN)✅ Certificats générés$(NC)\n"
+
+pki-gen: $(PKI_FLAG)
 
 pki-clean:
 	@printf "$(YELLOW)🧽 Nettoyage des certificats PKI...$(NC)\n"
@@ -52,15 +59,9 @@ pki-clean:
 #                              DOCKER ORCHESTRATION                            #
 # **************************************************************************** #
 
-up:
-	@printf "$(YELLOW)🛡️  Génération des certificats PKI...$(NC)\n"
-	@bash $(PKI_SCRIPT)
-	@printf "$(GREEN)✅ Certificats générés$(NC)\n"
-	@printf "$(YELLOW) Construction des images...$(NC)\n"
-	@$(COMPOSE) build
-	@$(MAKE) pki-clean
-	@printf "$(YELLOW) Démarrage des conteneurs...$(NC)\n"
-	@$(COMPOSE) up -d
+up: $(PKI_FLAG)
+	@printf "$(YELLOW)🚀 Démarrage des conteneurs...$(NC)\n"
+	@$(COMPOSE) up -d --build
 	@printf "$(GREEN)✅ Conteneurs démarrés$(NC)\n"
 	@$(COMPOSE) ps
 
@@ -74,10 +75,9 @@ build:
 	@$(COMPOSE) build
 	@printf "$(GREEN)✅ Images construites$(NC)\n"
 
-rebuild: down
+rebuild: down pki-clean
 	@printf "$(YELLOW)🔨 Reconstruction complète (no-cache)...$(NC)\n"
 	@$(COMPOSE) build --no-cache
-	@$(RM) .pki
 	@$(MAKE) up
 	@printf "$(GREEN)✅ Rebuild terminé$(NC)\n"
 

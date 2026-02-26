@@ -4,11 +4,14 @@ WORKDIR /app
 
 COPY bff/backend/package*.json ./
 
-RUN if [ -f package-lock.json ]; then \
+# Install Python and build dependencies for native modules (bcrypt)
+RUN apk add --no-cache python3 make g++ && \
+	if [ -f package-lock.json ]; then \
 			npm ci --omit=dev; \
 		else \
 			npm install --omit=dev; \
-		fi
+		fi && \
+	apk del python3 make g++
 COPY bff/backend/ .
 
 COPY .pki/bff /app/certs

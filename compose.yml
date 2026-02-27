@@ -42,8 +42,10 @@ services:
     networks:
       - bff_net
       - edge_net
+      - observability_net
     expose:
       - "7000"
+      - "9100"
 
 # Pour faire tourner le MongoDB pour site Groupomania
   bff-db:
@@ -335,6 +337,7 @@ services:
       - ./prometheus/web-config.yml:/etc/prometheus/web-config.yml
       - prometheus-data:/prometheus
     depends_on:
+      - bff
       - gateway
       - auth
       - user

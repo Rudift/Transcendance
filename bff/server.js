@@ -7,8 +7,8 @@ const app = express();
 
 // Configuration SSL
 const sslOptions = {
-	key: fs.readFileSync(process.env.SSL_KEY_PATH || '/app/certs/auth.key'),
-	cert: fs.readFileSync(process.env.SSL_CERT_PATH || '/app/certs/auth.crt'),
+	key: fs.readFileSync(process.env.SSL_KEY_PATH || '/app/certs/bff.key'),
+	cert: fs.readFileSync(process.env.SSL_CERT_PATH || '/app/certs/bff.crt'),
 	ca : fs.readFileSync(process.env.SSL_CA_PATH || '/app/certs/ca.crt')
 };
 
@@ -26,7 +26,7 @@ app.get('/metrics', async (req, res) => {
 
 // Endpoint de health check (optionnel mais utilse)
 app.get('/health', async (req, res) => {
-	res.json({ status: 'ok', service: 'auth'});
+	res.json({ status: 'ok', service: 'bff'});
 });
 
 // Démarrer le serveur sur le port 9100
@@ -34,5 +34,5 @@ const PORT = process.env.METRICS_PORT || 9100;
 
 // Création du serveur https
 https.createServer(sslOptions, app).listen(PORT, () => {
-	console.log(`Auth metrics server (HTTPS) listening on port ${PORT}`);
+	console.log(`BFF metrics server (HTTPS) listening on port ${PORT}`);
 });;

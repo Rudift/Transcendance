@@ -12,6 +12,13 @@ scrape_configs:
   #   static_configs:
   #     - targets: ["prometheus:9090"]
   
+  - job_name: "bff"
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    static_configs:
+      - targets: ["bff:9100"]
+
   - job_name: "auth"
     scheme: https
     tls_config:

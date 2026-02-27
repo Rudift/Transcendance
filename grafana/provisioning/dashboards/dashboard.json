@@ -60,7 +60,7 @@
 		},
 		{
 			"id": 3,
-			"title": "Débit sortant par service",
+			"title": "Débit réseau du site (Gateway)",
 			"type": "timeseries",
 			"gridPos": {
 				"x": 0,
@@ -70,34 +70,14 @@
 			},
 			"targets": [
 				{
-					"expr": "rate(container_network_transmit_bytes_total{name=~\"auth|user|content|social|realtime\"}[1m])",
-      				"legendFormat": "{{name}} - TX",
+					"expr": "sum(rate(container_network_transmit_bytes_total{id=~\".+\"}[1m]))",
+      				"legendFormat": "Trafic sortant (TX)",
       				"refId": "A"
-				}
-			],
-			"fieldConfig": {
-				"defaults": {
-					"unit": "Bps",
-					"min": 0
 				},
-				"overrides": []
-			}
-		},
-			{
-			"id": 4,
-			"title": "Débit entrant par service",
-			"type": "timeseries",
-			"gridPos": {
-				"x": 12,
-				"y": 8,
-				"w": 12,
-				"h": 8
-			},
-			"targets": [
 				{
-					"expr": "rate(container_network_receive_bytes_total{name=~\"auth|user|content|social|realtime\"}[1m])",
-      				"legendFormat": "{{name}} - RX",
-      				"refId": "A"
+					"expr": "sum(rate(container_network_receive_bytes_total{id=~\".+\"}[1m]))",
+      				"legendFormat": "Trafic entrant (RX)",
+      				"refId": "B"
 				}
 			],
 			"fieldConfig": {
@@ -108,7 +88,6 @@
 				"overrides": []
 			}
 		}
-
 	],
 	"time": {
 		"from": "now-1h",

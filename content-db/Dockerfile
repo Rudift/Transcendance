@@ -1,4 +1,4 @@
-FROM postgres:15-alpine
+FROM docker.io/library/postgres:15-alpine
 
 # Copie des certificats depuis le PKI
 COPY .pki/content-db/content-db.crt /var/lib/postgresql/server.crt

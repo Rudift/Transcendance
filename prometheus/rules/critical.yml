@@ -1,0 +1,22 @@
+groups:
+  - name: "ressources_criticals"
+    rules:
+      - alert: HighCPUUsageCritical
+        expr: (rate(process_cpu_seconds_total{job=~"auth|user|content|social|realtime|bff"}[1m]) * 100) > 90
+        for: 2m
+        labels:
+          severity: critical
+          service: "{{$labels.job}}"
+        annotations:
+          summary: "Utilisation critique du CPU détecté !"
+          description: "Le service {{$labels.job}} utilise {{$value}}% de CPU"
+      
+      - alert: HighMemoryUsageCritical
+        expr: (process_resident_memory_bytes{job=~"auth|user|content|social|realtime|bff"} / 1024 / 1024) > 400
+        for: 2m
+        labels:
+          severity: critical
+          service: "{{$labels.job}}"
+        annotations:
+          summary: "Utilisation mémoire critique !"
+          description: "Le service {{$labels.job}} utilise {{$value}} MB de RAM"

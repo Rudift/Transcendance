@@ -60,7 +60,7 @@
 		},
 		{
 			"id": 3,
-			"title": "Débit réseau du site (Gateway)",
+			"title": "Débit réseau par service",
 			"type": "timeseries",
 			"gridPos": {
 				"x": 0,
@@ -70,14 +70,9 @@
 			},
 			"targets": [
 				{
-					"expr": "sum(rate(container_network_transmit_bytes_total{id=~\".+\"}[1m]))",
-      				"legendFormat": "Trafic sortant (TX)",
+					"expr": "rate(docker_container_network_tx_bytes{container_name=~\"frontend|bff|gateway|auth|user|content|social|realtime\"}[1m])",
+					"legendFormat": "{{container_name}} - TX",
       				"refId": "A"
-				},
-				{
-					"expr": "sum(rate(container_network_receive_bytes_total{id=~\".+\"}[1m]))",
-      				"legendFormat": "Trafic entrant (RX)",
-      				"refId": "B"
 				}
 			],
 			"fieldConfig": {

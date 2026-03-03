@@ -1,5 +1,7 @@
 const https = require('https');  // ← Changé de http à https
 const fs = require('fs');         // ← Ajouté pour lire les certificats
+const express = require('express');
+const promClient = require('prom-client');
 const app = require('./app');
 
 const normalizePort = val => {
@@ -60,3 +62,27 @@ server.on('listening', () => {
 });
 
 server.listen(port);
+
+// ═══════════════════════════════════════════════════════
+// NOUVEAU : Serveur de métriques Prometheus sur le port 9100
+// ═══════════════════════════════════════════════════════
+const metricsApp = express();
+const register = new promClient.Registry();
+promClient.collectDefaultMetrics({ register });
+
+metricsApp.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
+});
+
+metricsApp.get('/health', async (req, res) => {
+  res.json({ status: 'ok', service: 'bff' });
+});
+
+const metricsPort = process.env.METRICS_PORT || 9100;
+const metricsServer = https.createServer(options, metricsApp);
+
+metricsServer.listen(metricsPort, () => {
+  console.log(`BFF metrics server (HTTPS) listening on port ${metricsPort}`);
+});
+// ═══════════════════════════════════════════════════════

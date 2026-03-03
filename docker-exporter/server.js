@@ -34,35 +34,38 @@ async function collectDockerStats(){
     const containers = await docker.listContainers();
 
     for (const containerInfo of containers) {
-        const container = docker.getContainer(containerInfo.Id);
-        const stats = await container.stats({ stream : false });
-        const networks = stats.networks || {};
-        let totalRx = 0;
-        let totalTx = 0;
+        try {
+            const container = docker.getContainer(containerInfo.Id);
+            const stats = await container.stats({ stream : false });
+            const networks = stats.networks || {};
+            let totalRx = 0;
+            let totalTx = 0;
 
-        for (const iface in networks) {
-            totalRx += networks[iface].rx_bytes || 0;
-            totalTx += networks[iface].tx_bytes || 0;
+            for (const iface in networks) {
+                totalRx += networks[iface].rx_bytes || 0;
+                totalTx += networks[iface].tx_bytes || 0;
+            }
+
+            const containerName = containerInfo.Names[0].replace('/', '');
+
+            networkRxBytes.set(
+                { container_name: containerName, container_id : containerInfo.Id.substring(0, 12)},
+                totalRx
+            );
+
+            networkTxBytes.set(
+                { container_name: containerName, container_id : containerInfo.Id.substring(0, 12)},
+                totalTx
+            );
+        } catch (err) {
+            console.warn(`Could not get stats for container ${containerInfo.Id}:`, err.message);
+            continue;
         }
-
-        // Mise à jour des métriques dans Prometheus
-        const containerName = containerInfo.Names[0].replace('/', '');
-
-        networkRxBytes.set(
-            { container_name: containerName, container_id : containerInfo.Id.substring(0, 12)},
-            totalRx
-        );
-
-        networkTxBytes.set(
-            { container_name: containerName, container_id : containerInfo.Id.substring(0, 12)},
-            totalTx
-        );
-
     }
 }
 
 // Création de l'endpoint pour les métriques
-app.get('metrics', async (req, res) => {
+app.get('/metrics', async (req, res) => {
     try {
         await collectDockerStats();
         res.set('Content-type', register.contentType);
@@ -74,8 +77,15 @@ app.get('metrics', async (req, res) => {
 
 });
 
-const PORT = 9200;
-app.listen(PORT, () => {
-    console.log(`Docker exporter listening on port ${PORT}`);
-    console.log(`Metrics available at http://localhost:${PORT}/metrics`);
-})
+// Démarrer le serveur
+const sslOptions = {
+    key: fs.readFileSync(process.env.SSL_KEY_PATH),
+    cert: fs.readFileSync(process.env.SSL_CERT_PATH),
+    ca: fs.readFileSync(process.env.SSL_CA_PATH)
+}
+
+https.createServer(sslOptions, app).listen(9200, () => {
+  console.log(`Docker exporter (HTTPS) listening on port 9200`);
+});
+
+

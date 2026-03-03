@@ -60,7 +60,7 @@
 		},
 		{
 			"id": 3,
-			"title": "Débit réseau par service",
+			"title": "Débit réseau global de l'infrastructure",
 			"type": "timeseries",
 			"gridPos": {
 				"x": 0,
@@ -70,9 +70,14 @@
 			},
 			"targets": [
 				{
-					"expr": "rate(docker_container_network_tx_bytes{container_name=~\"frontend|bff|gateway|auth|user|content|social|realtime\"}[1m])",
-					"legendFormat": "{{container_name}} - TX",
+					"expr": "rate(container_network_transmit_bytes_total{id=\"/\",interface=\"eno2\"}[1m])",
+					"legendFormat": "Trafic sortant (TX)",
       				"refId": "A"
+				},
+				{
+					"expr": "rate(container_network_receive_bytes_total{id=\"/\",interface=\"eno2\"}[1m])",
+					"legendFormat": "Trafic entrant (RX)",
+      				"refId": "B"
 				}
 			],
 			"fieldConfig": {

@@ -7,6 +7,7 @@
     	"build": "echo 'no build step defined'"
 	},
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "prom-client": "^14.2.0"
   }
 }

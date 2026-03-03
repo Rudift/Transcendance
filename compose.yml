@@ -323,19 +323,6 @@ services:
       - /dev/kmsg
     restart: unless-stopped
 
-  docker-exporter:
-    build:
-      context: .
-      dockerfile: docker-exporter/Dockerfile
-    container_name: docker-exporter
-    networks:
-      - observability_net
-    expose:
-      - "9200"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    restart: unless-stopped
-
   prometheus:
     build:
       context: .

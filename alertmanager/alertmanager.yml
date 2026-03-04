@@ -1,0 +1,9 @@
+global:
+  smtp_*: (configuration email)
+
+tls_config:
+  cert_file: '/etc/alertmanager/certs/alertmanager.crt'
+  key_file: '/etc/alertmanager/certs/alertmanager.key'
+  ca_file: '/etc/alertmanager/certs/ca.crt'
+route:
+receivers:

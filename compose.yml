@@ -350,6 +350,22 @@ services:
       - '--storage.tsdb.path=/prometheus'
       - '--web.config.file=/etc/prometheus/web-config.yml'
 
+  alertmanager:
+    build:
+      context: .
+      dockerfile: alertmanager/Dockerfile
+    container_name: alertmanager
+    networks:
+      - observability_net
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    env_file:
+      - .env
+    environment:
+      - 
+
   grafana:
     build:
       context: .

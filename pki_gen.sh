@@ -22,6 +22,7 @@ SERVICES=(
   grafana
   bff
   frontend
+  alertmanager
 )
 
 echo "==> Reset PKI"

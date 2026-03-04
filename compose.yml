@@ -358,13 +358,9 @@ services:
     networks:
       - observability_net
     ports:
-      - "9090:9090"
+      - "9093:9093"
     volumes:
       - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-    env_file:
-      - .env
-    environment:
-      - 
 
   grafana:
     build:

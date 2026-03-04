@@ -2,6 +2,13 @@ global:
   scrape_interval: 15s # Récupère les metrics toutes les 15 secondes
   evaluation_interval: 15s 
 
+# Configuration Alert Manager
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
 # Rucupère les règle de warnings et de criticals
 rule_files:
   - "rules/*.yml"

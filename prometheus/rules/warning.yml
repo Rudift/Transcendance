@@ -20,3 +20,5 @@ groups:
         annotations:
           summary: "Utilisation mémoire élevée"
           description: "Le service {{$labels.job}} utilise {{$value}} MB de RAM"
+
+      

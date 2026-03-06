@@ -19,8 +19,8 @@
 			},
 			"targets": [
 				{
-					"expr": "rate(process_cpu_seconds_total{job=~\"auth|user|content|social|realtime|bff\"}[1m]) * 100",
-					"legendFormat": "{{job}} - CPU %",
+					"expr": "rate(container_cpu_usage_seconds_total{name=~\"auth|user|content|social|realtime|bff\"}[1m]) * 100",
+					"legendFormat": "{{name}} - CPU %",
 					"refId": "A"
 				}
 			],
@@ -46,8 +46,8 @@
 			},
 			"targets": [
 				{
-					"expr": "process_resident_memory_bytes{job=~\"auth|user|content|social|realtime|bff\"} / 1024 / 1024",
-      				"legendFormat": "{{job}} - RAM (MB)",
+					"expr": "container_memory_usage_bytes{name=~\"auth|user|content|social|realtime|bff\"} / 1024 / 1024",
+      				"legendFormat": "{{name}} - RAM (MB)",
       				"refId": "A"
 				}
 			],

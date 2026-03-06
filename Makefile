@@ -55,6 +55,11 @@ pki-clean:
 	@$(RM) $(SSL_DIRS) .pki
 	@printf "$(GREEN)✅ Certificats PKI supprimés$(NC)\n"
 
+pki-clean-temp:
+	@printf "$(YELLOW)🧽 Suppression du dossier temporaire .pki...$(NC)\n"
+	@$(RM) .pki
+	@printf "$(GREEN)✅ Dossier .pki supprimé$(NC)\n"
+
 # **************************************************************************** #
 #                              DOCKER ORCHESTRATION                            #
 # **************************************************************************** #
@@ -64,6 +69,7 @@ up: $(PKI_FLAG)
 	@$(COMPOSE) up -d --build
 	@printf "$(GREEN)✅ Conteneurs démarrés$(NC)\n"
 	@$(COMPOSE) ps
+	@$(MAKE) pki-clean-temp
 
 down:
 	@printf "$(YELLOW)🛑 Arrêt des conteneurs...$(NC)\n"
@@ -145,5 +151,5 @@ help:
 #                                    PHONY                                     #
 # **************************************************************************** #
 
-.PHONY: all help pki-gen pki-clean up down build rebuild logs ps deps clean \
+.PHONY: all help pki-gen pki-clean pki-clean-temp up down build rebuild logs ps deps clean \
 	fclean re

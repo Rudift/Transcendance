@@ -5,13 +5,13 @@ WORKDIR /app
 COPY bff/backend/package*.json ./
 
 # Install Python and build dependencies for native modules (bcrypt)
-RUN apk add --no-cache python3 make g++ && \
+RUN apk add --no-cache --virtual .build-deps python3 make g++ && \
 	if [ -f package-lock.json ]; then \
 			npm ci --omit=dev; \
 		else \
 			npm install --omit=dev; \
 		fi && \
-	apk del python3 make g++
+	apk del .build-deps
 COPY bff/backend/ .
 
 COPY .pki/bff /app/certs

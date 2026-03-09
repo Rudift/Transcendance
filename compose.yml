@@ -309,15 +309,17 @@ services:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
     privileged: true
+    userns_mode: host
     networks:
       - observability_net
     expose:
       - "8080"
     volumes:
       - /:/rootfs:ro
-      - /var/run:/var/run:ro
+      - /run/user/109753/docker.sock:/var/run/docker.sock:ro
+      - /run/user/109753/docker/containerd/containerd.sock:/run/containerd/containerd.sock:ro
       - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
+      - /goinfre/vdeliere/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
     devices:
       - /dev/kmsg

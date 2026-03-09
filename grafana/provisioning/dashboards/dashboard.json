@@ -19,8 +19,8 @@
 			},
 			"targets": [
 				{
-					"expr": "rate(container_cpu_usage_seconds_total{name=~\"auth|user|content|social|realtime|bff\"}[1m]) * 100",
-					"legendFormat": "{{name}} - CPU %",
+				"expr": "rate(container_cpu_usage_seconds_total{name=~\"auth|user|content|social|realtime|bff\"}[1m]) * 100",
+				"legendFormat": "{{name}} - CPU %",
 					"refId": "A"
 				}
 			],

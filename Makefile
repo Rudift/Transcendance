@@ -2,7 +2,7 @@
 #                                    PROJECT                                   #
 # **************************************************************************** #
 
-.DEFAULT_GOAL:= up
+.DEFAULT_GOAL:= all
 NAME:= Transcendance
 
 # **************************************************************************** #
@@ -64,12 +64,11 @@ pki-clean-temp:
 #                              DOCKER ORCHESTRATION                            #
 # **************************************************************************** #
 
-up: $(PKI_FLAG)
+up:
 	@printf "$(YELLOW)🚀 Démarrage des conteneurs...$(NC)\n"
 	@$(COMPOSE) up -d --build
 	@printf "$(GREEN)✅ Conteneurs démarrés$(NC)\n"
 	@$(COMPOSE) ps
-	@$(MAKE) pki-clean-temp
 
 down:
 	@printf "$(YELLOW)🛑 Arrêt des conteneurs...$(NC)\n"
@@ -100,7 +99,18 @@ ps:
 deps:
 	@printf "$(YELLOW)🔗 Récupération des images depuis le registry...$(NC)\n"
 	@$(COMPOSE) pull --ignore-pull-failures || true
-	@printf "$(GREEN)✅ Images récupérées$(NC)\n"# **************************************************************************** #
+	@printf "$(GREEN)✅ Images récupérées$(NC)\n"
+
+# **************************************************************************** #
+#                                   MAKE ALL                                   #
+# **************************************************************************** #
+
+all: $(PKI_FLAG)
+	@$(MAKE) up
+	@$(MAKE) pki-clean-temp
+
+
+# **************************************************************************** #
 #                                   CLEANING                                   #
 # **************************************************************************** #
 

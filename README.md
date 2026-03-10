@@ -30,3 +30,60 @@
 
     Pour accéder au dashboard: cliquez sur Dashboard puis 42Hub.
     Pour monitorer les alertes: dérouler le menu Alerting puis cliquez sur Alert rules
+
+## Commandes Makefile
+    - all:
+        - Génère les certificats
+        - Build les conteneurs
+        - Lance les conteneurs
+        - Supprime les certificats
+    
+    - help:
+        - Affiche les commandes Makefile disponible et décrit sommairement leur fonctionnement
+    
+    - pki-gen:
+        - Génère les certificats dans le dossier .pki
+
+    - pki-clean:
+        - Supprime le dossier .pki et le dossiers SSL du gateway et du BFF
+
+    - pki-clean-temp:
+        - Supprime le dossier .pki
+    
+    - up:
+        - Démarre les conteneurs
+
+    - down:
+        - Arrête les conteneurs
+
+    - build:
+        - Lance la construction des conteneurs
+
+    - rebuild:
+        - Reconstruit l'intégralité des conteneurs
+
+    - logs:
+        - Affiche les logs du docker compose
+
+    - ps:
+        - Affiche les conteneurs actifs
+
+    - deps:
+        - Récupère les images depuis le registry
+
+    - clean:
+        - Arrête les conteneurs
+        - Supprime les conteneurs, réseaux et volumes
+
+    - fclean:
+        - Arrête les conteneurs
+        - Supprime les conteneurs, réseaux, volumes et les images associées
+    
+    - re:
+        - Arrête les conteneurs
+        - Supprime les conteneurs, réseaux, volumes et les images associées
+        - Génère les certificats
+        - Build les conteneurs
+        - Lance les conteneurs
+        - Supprime les certificats
+    

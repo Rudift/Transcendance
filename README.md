@@ -86,4 +86,21 @@
         - Build les conteneurs
         - Lance les conteneurs
         - Supprime les certificats
+
+## Déclenchement d'alertes Grafana
+
+### CPU
+    Start: docker exec "nom_conteneur" dd if=/dev/zero of=/dev/null &
+    Stop: docker exec "nom_conteneur" pkill dd
+
+### RAM
+    Start: docker exec auth node -e "const https = require('https'); const req = https.get({hostname:'localhost',port:9100,path:'/stress-memory',rejectUnauthorized:false}, res => { res.on('data', d => process.stdout.write(d)); }); req.on('error', e => console.error(e.message)); req.end();"
+
+    Stop: docker exec auth node -e "const https = require('https'); const req = https.get({hostname:'localhost',port:9100,path:'/free-memory',rejectUnauthorized:false}, res => { res.on('data', d => process.stdout.write(d)); }); req.on('error', e => console.error(e.message)); req.end();"
+
+## Modules
+    - Back-end as microservice: 2
+    - Monitoring system with Prometheus and Grafana: 2
+    Total: 4
+
     

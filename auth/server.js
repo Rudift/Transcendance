@@ -29,6 +29,22 @@ app.get('/health', async (req, res) => {
 	res.json({ status: 'ok', service: 'auth'});
 });
 
+// Endpoint pour créer une alerte mémoire
+let memoryHog = [];
+
+app.get('/stress-memory', (req, res) => {
+	// Alloue sur le tas V8 (heap JS) au lieu des Buffers externes
+	// new Array(N).fill(X) est bien tracké par process.memoryUsage().rss
+	memoryHog.push(new Array(20_000_000).fill(Math.random()));
+
+	res.json({ allocated: `~${memoryHog.length * 160} MB` });
+});
+
+app.get('/free-memory', (req, res) => {
+	memoryHog = [];
+	res.json({ status: 'memory released' });
+});
+
 // Démarrer le serveur sur le port 9100
 const PORT = process.env.METRICS_PORT || 9100;
 

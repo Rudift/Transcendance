@@ -64,7 +64,7 @@ pki-clean-temp:
 #                              DOCKER ORCHESTRATION                            #
 # **************************************************************************** #
 
-up:
+up: $(PKI_FLAG)
 	@printf "$(YELLOW)🚀 Démarrage des conteneurs...$(NC)\n"
 	@$(COMPOSE) up -d --build
 	@printf "$(GREEN)✅ Conteneurs démarrés$(NC)\n"
@@ -125,7 +125,7 @@ fclean: clean
 	@$(MAKE) pki-clean
 
 re: fclean
-	@$(MAKE) up
+	@$(MAKE) all
 
 # **************************************************************************** #
 #                                     HELP                                     #

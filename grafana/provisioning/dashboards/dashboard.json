@@ -87,6 +87,40 @@
 				},
 				"overrides": []
 			}
+		},
+		{
+			"id": 4,
+			"title": "Statut des règles d'alerte",
+			"type": "alertlist",
+			"gridPos": {
+				"x": 12,
+				"y": 8,
+				"w": 12,
+				"h": 8
+			},
+			"targets": [
+				{
+					"datasource": {
+						"type": "prometheus",
+						"uid": "prometheus"
+					},
+					"expr": "ALERTS",
+					"refId": "A"
+				}
+			],
+			"options": {
+				"viewmode": "list",
+				"groupMode": "default",
+				"maxItems": 6,
+				"sortOrder": 1,
+				"stateFilter": {
+					"firing": true,
+					"pending": true,
+					"noData": false,
+					"normal": false
+				}
+			}
+
 		}
 	],
 	"time": {

@@ -45,11 +45,11 @@ const errorHandler = error => {
 const server = https.createServer(options, app);  // ← Changé
 
 server.on('error', errorHandler);
+  console.log('Listening on ' + bind + ' (HTTPS)');  // ← Ajouté "(HTTPS)" pour clarté
 
 server.on('listening', () => {
   const address = server.address();
   const bind = typeof address === 'string' ? 'pipe ' + address : 'port ' + port;
-  console.log('Listening on ' + bind + ' (HTTPS)');  // ← Ajouté "(HTTPS)" pour clarté
 });
 
 server.listen(port);

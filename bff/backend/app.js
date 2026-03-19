@@ -7,6 +7,7 @@ const commentsRoutes = require('./routes/comments');
 const reactionsRoutes = require('./routes/reactions');
 const reportsRoutes = require('./routes/reports');
 const path = require ('path');
+const promClient = require('prom-client');
 require('dotenv').config();
 
 app.use (express.json());
@@ -28,4 +29,21 @@ app.use('/api/reactions', reactionsRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
+// Création du registre pour stocker les metriques
+const register = new promClient.Registry();
+
+// Ajout des métriques par défaut au register (CPU, mémoire ...)
+promClient.collectDefaultMetrics({ register });
+
+// Endpoint /metrics pour Prometheus
+app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+});
+
 module.exports = app;
+
+
+
+
+

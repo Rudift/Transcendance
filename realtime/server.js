@@ -15,4 +15,4 @@ const PORT = process.env.METRICS_PORT || 9100;
 // Création du serveur https
 https.createServer(sslOptions, app).listen(PORT, () => {
 	console.log(`Realtime metrics server (HTTPS) listening on port ${PORT}`);
-});;
+});

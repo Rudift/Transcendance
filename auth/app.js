@@ -14,11 +14,6 @@ app.get('/metrics', async (req, res) => {
 	res.end(await register.metrics());
 });
 
-// Endpoint de health check (optionnel mais utilse)
-app.get('/health', async (req, res) => {
-	res.json({ status: 'ok', service: 'auth'});
-});
-
 // Endpoint pour créer une alerte mémoire
 let memoryHog = [];
 

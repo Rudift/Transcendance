@@ -80,10 +80,11 @@ build:
 	@$(COMPOSE) build
 	@printf "$(GREEN)✅ Images construites$(NC)\n"
 
-rebuild: down pki-clean
+rebuild: down $(PKI_FLAG)
 	@printf "$(YELLOW)🔨 Reconstruction complète (no-cache)...$(NC)\n"
 	@$(COMPOSE) build --no-cache
 	@$(MAKE) up
+	@$(MAKE) pki-clean-temp
 	@printf "$(GREEN)✅ Rebuild terminé$(NC)\n"
 
 logs:

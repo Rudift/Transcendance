@@ -90,11 +90,29 @@
 		},
 		{
 			"id": 4,
-			"title": "Statut des règles d'alerte",
-			"type": "alertlist",
+			"title": "Nombre de requête par services",
+			"type": "timeseries",
 			"gridPos": {
 				"x": 12,
 				"y": 8,
+				"w": 12,
+				"h": 8
+			},
+			"targets": [
+				{
+					"expr": "sum by (job) (rate(https_requests_total[5m]))",
+					"legendFormat": "{{job}} req/s",
+      				"refId": "A"
+				}
+			]
+		},
+		{
+			"id": 5,
+			"title": "Statut des règles d'alerte",
+			"type": "alertlist",
+			"gridPos": {
+				"x": 0,
+				"y": 16,
 				"w": 12,
 				"h": 8
 			},

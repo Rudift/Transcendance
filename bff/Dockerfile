@@ -2,7 +2,9 @@ FROM node:24-alpine
 
 WORKDIR /app
 
-COPY bff/backend/package*.json ./
+# COPY bff/backend/package*.json ./
+
+COPY bff/package*.json ./
 
 # Install Python and build dependencies for native modules (bcrypt)
 RUN apk add --no-cache --virtual .build-deps python3 make g++ && \

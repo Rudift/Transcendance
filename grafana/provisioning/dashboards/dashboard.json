@@ -60,7 +60,7 @@
 		},
 		{
 			"id": 3,
-			"title": "Débit réseau global de l'infrastructure",
+			"title": "Débit réseau par service",
 			"type": "timeseries",
 			"gridPos": {
 				"x": 0,
@@ -70,13 +70,13 @@
 			},
 			"targets": [
 				{
-					"expr": "sum(rate(container_network_transmit_bytes_total{name=~\".*\"}[1m]))",
-					"legendFormat": "Trafic sortant (TX)",
+					"expr": "sum by (name) (rate(container_network_transmit_bytes_total{name=~\"auth|user|content|social|realtime|bff\"}[1m]))",
+					"legendFormat": "{{name}} - TX",
       				"refId": "A"
 				},
 				{
-					"expr": "sum(rate(container_network_receive_bytes_total{name=~\".*\"}[1m]))",
-					"legendFormat": "Trafic entrant (RX)",
+					"expr": "sum by (name) (rate(container_network_receive_bytes_total{name=~\"auth|user|content|social|realtime|bff\"}[1m]))",
+					"legendFormat": "{{name}} - RX",
       				"refId": "B"
 				}
 			],
@@ -100,7 +100,7 @@
 			},
 			"targets": [
 				{
-					"expr": "sum by (job) (rate(https_requests_total[5m]))",
+					"expr": "sum by (job) (rate(https_requests_total[1m]))",
 					"legendFormat": "{{job}} req/s",
       				"refId": "A"
 				}

@@ -1,7 +1,9 @@
 const https = require('https');  // ← Changé de http à https
 const fs = require('fs');         // ← Ajouté pour lire les certificats
 const express = require('express');
-const app = require('./app');
+
+const serviceApp = require('./app');
+const metricsApp = require('./metrics/app');
 
 const normalizePort = val => {
   const port = parseInt(val, 10);
@@ -16,7 +18,7 @@ const normalizePort = val => {
 
 const port = normalizePort(process.env.PORT || '7000');
 
-const options = {
+const sslOptions = {
   key: fs.readFileSync(process.env.SSL_KEY_PATH || '/app/certs/bff.key'),
   cert: fs.readFileSync(process.env.SSL_CERT_PATH || '/app/certs/bff.crt'),
   ca: fs.readFileSync(process.env.SSL_CA_PATH || '/app/certs/ca.crt')
@@ -42,7 +44,13 @@ const errorHandler = error => {
   }
 };
 
-const server = https.createServer(options, app);  // ← Changé
+const METRICS_PORT = Number(process.env.METRICS_PORT) || 9100;
+
+const server = https.createServer(sslOptions, serviceApp);  // ← Changé
+
+https.createServer(sslOptions, metricsApp).listen(METRICS_PORT, () => {
+  console.log(`BFF Metrics (HTTPS) listening on ${METRICS_PORT}`);
+});
 
 server.on('error', errorHandler);
 server.on('listening', () => {

@@ -1,7 +1,7 @@
 const https = require('https');
 const fs = require('fs');
 
-const apiApp = require('./api/app');
+const apiApp = require('./service/app');
 const metricsApp = require('./metrics/app');
 
 const sslOptions = {

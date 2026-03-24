@@ -2,21 +2,21 @@ groups:
   - name: "network_alerts"
     rules:
       - alert: HighNetworkUsageWarning
-        expr: rate(http_response_size_bytes_sum{job=~"auth|user|content|social|realtime|bff"}[5m]) / 1024 / 1024 > 10
-        for : 5m
+        expr: sum by (name) (rate(container_network_transmit_bytes_total{name=~"auth|user|content|social|realtime|bff"}[1m])) / 1024 / 1024 > 10
+        for: 5m
         labels:
           severity: warning
-          service: "{{$labels.job}}"
+          service: "{{$labels.name}}"
         annotations:
           summary: "Débit sortant élevé"
           description: "Débit de {{$value}} MB/s pendant plus de 5 minutes"
 
       - alert: HighNetworkUsageCritical
-        expr: rate(http_response_size_bytes_sum{job=~"auth|user|content|social|realtime|bff"}[5m]) / 1024 / 1024 > 20
-        for : 1m
+        expr: sum by (name) (rate(container_network_transmit_bytes_total{name=~"auth|user|content|social|realtime|bff"}[1m])) / 1024 / 1024 > 20
+        for: 1m
         labels:
           severity: critical
-          service: "{{$labels.job}}"
+          service: "{{$labels.name}}"
         annotations:
           summary: "Débit sortant critique"
           description: "Débit de {{$value}} MB/s pendant plus de 1 minute"

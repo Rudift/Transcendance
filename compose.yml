@@ -10,6 +10,7 @@ services:
       - edge_net
     expose:
       - "3000"
+    restart: unless-stopped
   
   # BFF pour notre config multiservice  
   # bff:
@@ -36,7 +37,7 @@ services:
       - DB_CONNECT=mongodb://bff-db:27017/Groupomania
       - SSL_CERT_PATH=/app/certs/bff.crt    
       - SSL_KEY_PATH=/app/certs/bff.key     
-      - SSL_CA_PATH=/app/certs/ca.crt        
+      - SSL_CA_PATH=/app/certs/ca.crt
     depends_on:
       - bff-db
     networks:
@@ -46,6 +47,7 @@ services:
     expose:
       - "7000"
       - "9100"
+    restart: unless-stopped
 
 # Pour faire tourner le MongoDB pour site Groupomania
   bff-db:
@@ -55,6 +57,7 @@ services:
       - bff_net
     volumes:
       - bff-db-data:/data/db # volume managé
+    restart: unless-stopped
 
   gateway:
     build:
@@ -77,6 +80,7 @@ services:
     #   - realtime
       - frontend
       - bff
+    restart: unless-stopped
 
   auth:
     build:
@@ -96,6 +100,7 @@ services:
       - SSL_CERT_PATH=/app/certs/auth.crt
       - SSL_KEY_PATH=/app/certs/auth.key
       - SSL_CA_PATH=/app/certs/ca.crt
+    restart: unless-stopped
       
 
   auth-db:
@@ -103,7 +108,6 @@ services:
       context: .
       dockerfile: auth-db/Dockerfile
     container_name: auth-db
-    restart: always
     env_file:
       - .env
     environment:
@@ -124,6 +128,7 @@ services:
                -c ssl_cert_file=/var/lib/postgresql/server.crt 
                -c ssl_key_file=/var/lib/postgresql/server.key
                -c ssl_ca_file=/var/lib/postgresql/root.crt
+    restart: unless-stopped
   user:
     build:
       context: .
@@ -142,13 +147,13 @@ services:
       - SSL_CERT_PATH=/app/certs/user.crt
       - SSL_KEY_PATH=/app/certs/user.key
       - SSL_CA_PATH=/app/certs/ca.crt
+    restart: unless-stopped
 
   user-db:
     build:
       context: .
       dockerfile: user-db/Dockerfile
     container_name: user-db
-    restart: always
     env_file:
       - .env
     environment:
@@ -168,6 +173,7 @@ services:
                -c ssl_cert_file=/var/lib/postgresql/server.crt 
                -c ssl_key_file=/var/lib/postgresql/server.key
                -c ssl_ca_file=/var/lib/postgresql/root.crt
+    restart: unless-stopped
   
   content:
     build:
@@ -187,13 +193,13 @@ services:
       - SSL_CERT_PATH=/app/certs/content.crt
       - SSL_KEY_PATH=/app/certs/content.key
       - SSL_CA_PATH=/app/certs/ca.crt
+    restart: unless-stopped
 
   content-db:
     build:
       context: .
       dockerfile: content-db/Dockerfile
     container_name: content-db
-    restart: always
     env_file:
       - .env
     environment:
@@ -213,6 +219,7 @@ services:
                -c ssl_cert_file=/var/lib/postgresql/server.crt 
                -c ssl_key_file=/var/lib/postgresql/server.key
                -c ssl_ca_file=/var/lib/postgresql/root.crt
+    restart: unless-stopped
 
   social:
     build:
@@ -232,13 +239,13 @@ services:
       - SSL_CERT_PATH=/app/certs/social.crt
       - SSL_KEY_PATH=/app/certs/social.key
       - SSL_CA_PATH=/app/certs/ca.crt
+    restart: unless-stopped
 
   social-db:
     build:
       context: .
       dockerfile: social-db/Dockerfile
     container_name: social-db
-    restart: always
     env_file:
       - .env
     environment:
@@ -258,6 +265,7 @@ services:
                -c ssl_cert_file=/var/lib/postgresql/server.crt 
                -c ssl_key_file=/var/lib/postgresql/server.key
                -c ssl_ca_file=/var/lib/postgresql/root.crt
+    restart: unless-stopped
 
   realtime:
     build:
@@ -278,13 +286,13 @@ services:
       - SSL_CERT_PATH=/app/certs/realtime.crt
       - SSL_KEY_PATH=/app/certs/realtime.key
       - SSL_CA_PATH=/app/certs/ca.crt
+    restart: unless-stopped
 
   realtime-db:
     build:
       context: .
       dockerfile: realtime-db/Dockerfile
     container_name: realtime-db
-    restart: always
     env_file:
       - .env
     environment:
@@ -304,6 +312,7 @@ services:
                -c ssl_cert_file=/var/lib/postgresql/server.crt 
                -c ssl_key_file=/var/lib/postgresql/server.key
                -c ssl_ca_file=/var/lib/postgresql/root.crt
+    restart: unless-stopped
     
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
@@ -351,6 +360,7 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.config.file=/etc/prometheus/web-config.yml'
+    restart: unless-stopped
 
   alertmanager:
     build:
@@ -363,6 +373,7 @@ services:
       - "9093:9093"
     volumes:
       - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    restart: unless-stopped
 
   grafana:
     build:

@@ -314,6 +314,26 @@ services:
                -c ssl_ca_file=/var/lib/postgresql/root.crt
     restart: unless-stopped
     
+  notification:
+    build:
+      context: .
+      dockerfile: notification/Dockerfile
+    container_name: notification
+    stdin_open: true
+    tty: true
+    networks:
+      - services_net
+      - realtime_net
+      - observability_net
+    expose:
+      - "7000"
+      - "7001"
+      - "9100"
+    environment:
+      - SSL_CERT_PATH=/app/certs/notification.crt
+      - SSL_KEY_PATH=/app/certs/notification.key
+      - SSL_CA_PATH=/app/certs/ca.crt
+    restart: unless-stopped
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor

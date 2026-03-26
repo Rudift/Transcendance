@@ -23,6 +23,7 @@ SERVICES=(
   bff
   frontend
   alertmanager
+  notification
 )
 
 echo "==> Reset PKI"

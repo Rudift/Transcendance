@@ -24,6 +24,7 @@ SERVICES=(
   frontend
   alertmanager
   notification
+  status
 )
 
 echo "==> Reset PKI"

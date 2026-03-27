@@ -334,6 +334,24 @@ services:
       - SSL_KEY_PATH=/app/certs/notification.key
       - SSL_CA_PATH=/app/certs/ca.crt
     restart: unless-stopped
+
+  status:
+    build:
+      context: .
+      dockerfile: status/Dockerfile
+    container_name: status
+    stdin_open: true
+    tty: true
+    networks:
+      - services_net
+    expose:
+      - "7000"
+    environment:
+      - SSL_CERT_PATH=/app/certs/status.crt
+      - SSL_KEY_PATH=/app/certs/status.key
+      - SSL_CA_PATH=/app/certs/ca.crt
+    restart: unless-stopped
+
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor

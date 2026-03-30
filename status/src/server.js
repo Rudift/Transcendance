@@ -21,40 +21,45 @@ const targets = [
     { name: "notification", url: "https://notification:7000/health" },
 ];
 
-function probe(urlString, {rejectUnauthorized}){
-    return new Promise((resolve) => {
-        const url = new URL(urlString);
-        const start = Date.now();
+const TIMEOUT_MS = Number(process.env.STATUS_TIMEOUT_MS || 1500);
 
-        const req = https.request(
-            {
-                hostname: url.hostname,
-                port: url.port || 8443,
-                path: url.pathname + url.search,
-                method: "GET",
-                timeout: TIMEOUT_MS,
-                ca,
-                rejectUnauthorized,
-            },
-            (res) => {
-                res.resume();
-                res.on("end", () => {
-                    resolve({
-                        ok: res.statusCode >= 200 && res.statusCode < 300,
-                        code: res.statusCode,
-                        ms: Date.now() - start,
-                    });
-                });
-            }
-        );
+const caPath = process.env.SSL_CA_PATH || "/app/certs/ca.crt";
+const ca = fs.existsSync(caPath) ? fs.readFileSync(caPath) : undefined;
 
-        req.on("timeout", () => req.destroy(new Error("timeout")));
-        req.on("error", (err) =>
-            resolve({ ok: false, error: err.message, ms: Date.now() - start})
-        );
+function probe(urlString, { rejectUnauthorized }) {
+  return new Promise((resolve) => {
+    const url = new URL(urlString);
+    const start = Date.now();
 
-        req.end();
-    });
+    const req = https.request(
+      {
+        hostname: url.hostname,
+        port: url.port ? Number(url.port) : 443,   // <-- pas 8443
+        path: url.pathname + url.search,
+        method: "GET",
+        timeout: TIMEOUT_MS,
+        ca,
+        rejectUnauthorized,
+      },
+      (res) => {
+        res.resume();
+        res.on("end", () => {
+          resolve({
+            ok: res.statusCode >= 200 && res.statusCode < 300,
+            code: res.statusCode,
+            ms: Date.now() - start,
+          });
+        });
+      }
+    );
+
+    req.on("timeout", () => req.destroy(new Error("timeout")));
+    req.on("error", (err) =>
+      resolve({ ok: false, error: err.message, ms: Date.now() - start })
+    );
+
+    req.end();
+  });
 }
 
 async function probeWithFallback(url) {
@@ -110,11 +115,13 @@ app.get("/status", async (_req, res) => {
 </html>`);
 });
 
-// (optionnel) pour avoir / en redirect
-app.get("/", (_req, res) => res.redirect("/status"));
+const server = https.createServer(sslOptions, app);
 
-app.listen(PORT, () => console.log(`status service listening on ${PORT}`));
+server.on("error", (err) => {
+  console.error("HTTPS server error:", err);
+  process.exit(1);
+});
 
-https.createServer(sslOptions, app).listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`status service (HTTPS) listening on ${PORT}`);
 });

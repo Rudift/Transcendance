@@ -98,9 +98,25 @@
 
     Stop: docker exec auth node -e "const https = require('https'); const req = https.get({hostname:'localhost',port:9100,path:'/free-memory',rejectUnauthorized:false}, res => { res.on('data', d => process.stdout.write(d)); }); req.on('error', e => console.error(e.message)); req.end();"
 
+## Page Healthcheck
+    Vous pourrez consulter la page healthcheck à l'URL suivante: https://localhost:8443/status
+    Sur cette page vous pourrez voir un tableau avec les éléments suivant:
+        - Nom du service
+        - Status (UP ou DOWN)
+        - Code de retour http :
+            - 200: tout est ok
+            - 404: mauvaise route
+            - 401: endpoint protégé
+            - 500: le service répond mais il est en erreur
+            - "-" + message d'erreur pour TimeOut / DNS / TLS / connexion refusée
+        - Etat du TLS
+        - Latence
+        - Détail de l'erreur
+
 ## Modules
     - Back-end as microservice: 2
     - Monitoring system with Prometheus and Grafana: 2
-    Total: 4
+    - Page Healthcheck: 1
+    Total: 5
 
     
